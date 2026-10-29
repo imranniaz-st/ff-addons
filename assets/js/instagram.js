@@ -203,9 +203,23 @@
     });
   }
 
+  function processEmbeds(root) {
+    if (!window.instgrm || !window.instgrm.Embeds || typeof window.instgrm.Embeds.process !== 'function') {
+      return;
+    }
+    try {
+      window.instgrm.Embeds.process(root || undefined);
+    } catch (e) {
+      /* ignore embed refresh errors */
+    }
+  }
+
   function enhanceSection(root) {
-    var items = root.querySelectorAll('.instagram-item');
+    var items = root.querySelectorAll('.instagram-item:not(.instagram-item--embed)');
     observeFade(Array.prototype.slice.call(items));
+    if (root.querySelector('.instagram-item--embed')) {
+      processEmbeds(root);
+    }
   }
 
   function boot(scope) {

@@ -40,6 +40,21 @@ class FF_Addons_Admin
             'sanitize_callback' => 'sanitize_text_field',
             'default' => 'Rs.',
         ]);
+        register_setting('ff_addons', 'ff_addons_instagram_token', [
+            'type' => 'string',
+            'sanitize_callback' => [$this, 'sanitize_instagram_token'],
+            'default' => '',
+        ]);
+    }
+
+    public function sanitize_instagram_token($value): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+        if ($value === '') {
+            return '';
+        }
+
+        return sanitize_text_field($value);
     }
 
     public function sanitize_api_base_url($value): string
@@ -97,6 +112,18 @@ class FF_Addons_Admin
                                    value="<?php echo esc_attr((string) get_option('ff_addons_currency', 'Rs.')); ?>">
                         </td>
                     </tr>
+                    <tr>
+                        <th scope="row"><label for="ff_addons_instagram_token"><?php echo esc_html__('Instagram access token', 'ff-addons'); ?></label></th>
+                        <td>
+                            <input type="password" class="regular-text" id="ff_addons_instagram_token" name="ff_addons_instagram_token"
+                                   value="<?php echo esc_attr((string) get_option('ff_addons_instagram_token', '')); ?>"
+                                   autocomplete="off"
+                                   placeholder="<?php echo esc_attr__('Long-lived Instagram Graph / Basic Display token', 'ff-addons'); ?>">
+                            <p class="description">
+                                <?php echo esc_html__('Optional. Used when FF Instagram Source = Graph API. Create a Meta app, connect the Instagram professional account, then paste a long-lived token. Leave empty and use Instagram post URLs in the widget instead.', 'ff-addons'); ?>
+                            </p>
+                        </td>
+                    </tr>
                 </table>
                 <?php submit_button(); ?>
             </form>
@@ -114,7 +141,7 @@ class FF_Addons_Admin
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>
             <ul>
-                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF About Us, FF CTA</li>
+                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF About Us, FF Instagram, FF CTA</li>
                 <li><strong><?php echo esc_html__('FF Addons · Menu', 'ff-addons'); ?></strong> — FF Categories, FF Menu</li>
                 <li><strong><?php echo esc_html__('FF Addons · Offers', 'ff-addons'); ?></strong> — FF Deals</li>
             </ul>

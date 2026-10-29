@@ -1,5 +1,6 @@
-/* About Us — restaurant / story template */
-.about-section-wrapper {
+/* About Us — restaurant / story template
+   Scoped under .ff-addons-about so theme / Elementor rules cannot flatten the layout. */
+.ff-addons-about.about-section-wrapper {
   width: 100%;
   background-color: #fff;
   padding: 80px 20px;
@@ -9,7 +10,7 @@
   overflow: hidden;
 }
 
-.about-container {
+.ff-addons-about .about-container {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
@@ -18,12 +19,12 @@
   gap: 50px;
 }
 
-.about-content {
+.ff-addons-about .about-content {
   flex: 1;
   max-width: 580px;
 }
 
-.about-subtitle {
+.ff-addons-about .about-subtitle {
   color: #388cb6;
   font-size: 14px;
   font-weight: 700;
@@ -31,43 +32,53 @@
   letter-spacing: 2px;
   display: block;
   margin-bottom: 10px;
+  font-family: "Montserrat", sans-serif;
 }
 
-.about-title {
+.ff-addons-about .about-title,
+.ff-addons-about h2.about-title {
   color: #000;
   font-size: 38px;
   font-weight: 800;
   line-height: 46px;
   margin: 0 0 18px 0;
+  padding: 0;
   font-family: "Kanit", sans-serif;
+  letter-spacing: normal;
+  text-transform: none;
 }
 
-.about-text {
+.ff-addons-about .about-text,
+.ff-addons-about p.about-text {
   color: #888;
   font-size: 15px;
   line-height: 25px;
-  margin-bottom: 12px;
+  margin: 0 0 12px 0;
+  padding: 0;
+  font-family: "Montserrat", sans-serif;
+  font-weight: 400;
 }
 
-.about-text.highlight-text {
+.ff-addons-about .about-text.highlight-text,
+.ff-addons-about p.about-text.highlight-text {
   color: #000;
   font-weight: 600;
 }
 
-.about-features {
+.ff-addons-about .about-features {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px 20px;
   margin: 25px 0 30px 0;
 }
 
-.feature-item {
+.ff-addons-about .feature-item {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.feature-icon {
+.ff-addons-about .feature-icon {
   width: 22px;
   height: 22px;
   background-color: rgba(56, 140, 182, 0.15);
@@ -80,15 +91,18 @@
   font-size: 12px;
   font-weight: 800;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
-.feature-item span {
+.ff-addons-about .feature-item span {
   font-size: 14px;
   font-weight: 600;
   color: #000;
+  font-family: "Montserrat", sans-serif;
 }
 
-.about-btn {
+.ff-addons-about a.about-btn,
+.ff-addons-about .about-btn {
   display: inline-block;
   background-color: #388cb6;
   color: #ffffff;
@@ -102,28 +116,34 @@
   letter-spacing: 0.5px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(56, 140, 182, 0.3);
+  border: none;
+  line-height: 1.2;
 }
 
-.about-btn:hover {
+.ff-addons-about a.about-btn:hover,
+.ff-addons-about a.about-btn:focus,
+.ff-addons-about .about-btn:hover,
+.ff-addons-about .about-btn:focus {
   background-color: #ffffff;
   color: #0b0b0b;
   transform: translateY(-2px);
+  text-decoration: none;
 }
 
-.about-image-wrapper {
+.ff-addons-about .about-image-wrapper {
   flex: 1;
   display: flex;
   justify-content: center;
 }
 
-.image-frame {
+.ff-addons-about .image-frame {
   position: relative;
   max-width: 500px;
   width: 100%;
   border-radius: 16px;
 }
 
-.image-frame::before {
+.ff-addons-about .image-frame::before {
   content: "";
   position: absolute;
   top: -12px;
@@ -133,10 +153,12 @@
   border: 2px solid #388cb6;
   border-radius: 16px;
   z-index: 1;
+  box-sizing: border-box;
+  pointer-events: none;
 }
 
-.image-frame img,
-.image-frame .about-image-placeholder {
+.ff-addons-about .image-frame img,
+.ff-addons-about .image-frame .about-image-placeholder {
   width: 100%;
   height: auto;
   border-radius: 16px;
@@ -145,16 +167,17 @@
   z-index: 2;
   object-fit: cover;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  max-width: 100%;
 }
 
-.image-frame .about-image-placeholder {
+.ff-addons-about .image-frame .about-image-placeholder {
   aspect-ratio: 4 / 5;
   min-height: 320px;
   background: #e8ecee;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
-.exp-badge {
+.ff-addons-about .exp-badge {
   position: absolute;
   bottom: -20px;
   left: -20px;
@@ -169,18 +192,21 @@
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
-.exp-number {
+.ff-addons-about .exp-number {
   font-family: "Kanit", sans-serif;
   font-size: 28px;
   font-weight: 800;
   line-height: 1;
+  color: #ffffff;
 }
 
-.exp-text {
+.ff-addons-about .exp-text {
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-top: 4px;
   text-align: center;
+  color: #ffffff;
+  font-family: "Montserrat", sans-serif;
 }

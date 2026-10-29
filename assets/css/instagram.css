@@ -1,4 +1,5 @@
-/* Instagram — curated gallery (FaceFood aesthetic) */
+/* Instagram — curated / embeds / Graph API gallery */
+.ff-addons-instagram.instagram-section-wrapper,
 .instagram-section-wrapper {
   width: 100%;
   background-color: #fff;
@@ -240,11 +241,53 @@
   text-align: center;
   color: #888;
   font-size: 15px;
+  line-height: 1.5;
   padding: 40px 16px;
   margin: 0 0 24px;
   border: 1px dashed #d0d7dc;
   border-radius: 12px;
   background: #fafbfc;
+}
+
+.instagram-empty__link {
+  display: inline-block;
+  margin-top: 10px;
+  color: #388cb6;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.instagram-empty__link:hover {
+  text-decoration: underline;
+}
+
+/* Official Instagram embeds (post URL source) */
+.instagram-grid--embeds .instagram-item--embed {
+  aspect-ratio: auto;
+  min-height: 280px;
+  overflow: hidden;
+  background: #fff;
+  cursor: default;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.instagram-grid--embeds .instagram-item--embed:hover img {
+  transform: none;
+}
+
+.instagram-grid--embeds .instagram-item--embed blockquote.instagram-media,
+.instagram-grid--embeds .instagram-item--embed iframe,
+.instagram-grid--embeds .instagram-item--embed .instagram-media {
+  margin: 0 auto !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  width: 100% !important;
+}
+
+.instagram-grid--embeds .instagram-item--embed > * {
+  width: 100%;
 }
 
 /* Lightbox */

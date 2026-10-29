@@ -33,63 +33,65 @@
 
 /* About Us — restaurant / story template */
 @media (max-width: 991px) {
-  .about-container {
+  .ff-addons-about .about-container {
     flex-direction: column;
     gap: 60px;
   }
 
-  .about-content {
+  .ff-addons-about .about-content {
     max-width: 100%;
     text-align: center;
   }
 
-  .about-title {
+  .ff-addons-about .about-title,
+  .ff-addons-about h2.about-title {
     font-size: 32px;
     line-height: 40px;
   }
 
-  .about-features {
+  .ff-addons-about .about-features {
     justify-content: center;
     text-align: left;
     max-width: 450px;
     margin: 25px auto 30px auto;
   }
 
-  .about-image-wrapper {
+  .ff-addons-about .about-image-wrapper {
     width: 100%;
   }
 
-  .image-frame {
+  .ff-addons-about .image-frame {
     max-width: 450px;
   }
 }
 
 @media (max-width: 480px) {
-  .about-section-wrapper {
+  .ff-addons-about.about-section-wrapper {
     padding: 50px 15px;
   }
 
-  .about-title {
+  .ff-addons-about .about-title,
+  .ff-addons-about h2.about-title {
     font-size: 26px;
     line-height: 34px;
   }
 
-  .about-features {
+  .ff-addons-about .about-features {
     grid-template-columns: 1fr;
     gap: 10px;
   }
 
-  .exp-badge {
+  .ff-addons-about .exp-badge {
     bottom: -15px;
     left: 10px;
     padding: 10px 16px;
   }
 
-  .exp-number {
+  .ff-addons-about .exp-number {
     font-size: 22px;
   }
 
-  .exp-text {
+  .ff-addons-about .exp-text {
     font-size: 10px;
   }
 }

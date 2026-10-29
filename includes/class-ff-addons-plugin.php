@@ -25,6 +25,9 @@ class FF_Addons_Plugin
         if (get_option('ff_addons_currency') === false) {
             add_option('ff_addons_currency', 'Rs.');
         }
+        if (get_option('ff_addons_instagram_token') === false) {
+            add_option('ff_addons_instagram_token', '');
+        }
     }
 
     public function init(): void
@@ -90,6 +93,13 @@ class FF_Addons_Plugin
         wp_register_style('ff-addons-editor', $css . 'editor.css', [], $ver);
 
         wp_register_script('ff-addons-instagram', $js . 'instagram.js', [], $ver, true);
+        wp_register_script(
+            'instagram-embed',
+            'https://www.instagram.com/embed.js',
+            [],
+            null,
+            true
+        );
     }
 
     /** Elementor editor / preview: load all component styles. */
@@ -106,6 +116,7 @@ class FF_Addons_Plugin
         wp_enqueue_style('ff-addons-responsive');
         wp_enqueue_style('ff-addons-editor');
         wp_enqueue_script('ff-addons-instagram');
+        wp_enqueue_script('instagram-embed');
     }
 
     /** @param list<string> $handles */
@@ -252,7 +263,12 @@ class FF_Addons_Plugin
             'profile_url' => 'https://www.instagram.com/facefood_pwd_/',
             'columns' => '4',
             'button_text' => __('Follow on Instagram', 'ff-addons'),
+            'source' => 'posts',
+            'post_urls' => '',
+            'limit' => '8',
         ], $atts, 'ff_addons_instagram');
+
+        $postUrls = array_values(array_filter(array_map('trim', preg_split('/[\s,]+/', (string) $atts['post_urls']) ?: [])));
 
         return $this->render_instagram([
             'subtitle' => (string) $atts['subtitle'],
@@ -261,8 +277,11 @@ class FF_Addons_Plugin
             'profile_url' => (string) $atts['profile_url'],
             'profile_external' => true,
             'profile_nofollow' => true,
+            'source' => (string) $atts['source'],
+            'post_urls' => $postUrls,
             'items' => [],
             'columns' => (int) $atts['columns'],
+            'limit' => (int) $atts['limit'],
             'button_text' => (string) $atts['button_text'],
         ]);
     }
@@ -434,7 +453,7 @@ class FF_Addons_Plugin
 
         ob_start();
         ?>
-        <div class="about-section-wrapper">
+        <div class="ff-addons-about about-section-wrapper">
             <div class="about-container">
                 <div class="about-content">
                     <?php if ($subtitle !== '') : ?>
@@ -507,7 +526,7 @@ class FF_Addons_Plugin
     }
 
     /**
-     * Curated Instagram-style gallery — Media Library images only (no scrape / API).
+     * Instagram gallery: curated Media Library, official post embeds, or Graph API media.
      *
      * @param  array<string, mixed>  $args
      */
@@ -524,9 +543,76 @@ class FF_Addons_Plugin
         $profileNofollow = (bool) ($args['profile_nofollow'] ?? true);
         $buttonText = (string) ($args['button_text'] ?? '');
         $columns = max(2, min(6, (int) ($args['columns'] ?? 4)));
+        $limit = max(1, min(24, (int) ($args['limit'] ?? 8)));
+        $source = (string) ($args['source'] ?? 'posts');
+        if (! in_array($source, ['curated', 'posts', 'api'], true)) {
+            $source = 'posts';
+        }
+
         $items = $args['items'] ?? [];
         if (! is_array($items)) {
             $items = [];
+        }
+        $postUrls = $args['post_urls'] ?? [];
+        if (! is_array($postUrls)) {
+            $postUrls = [];
+        }
+
+        $mode = 'empty';
+        $galleryItems = [];
+        $embedHtmls = [];
+        $emptyMessage = '';
+
+        if ($source === 'api') {
+            $galleryItems = $this->fetch_instagram_graph_media($limit);
+            if ($galleryItems !== []) {
+                $mode = 'images';
+            } else {
+                $token = (string) get_option('ff_addons_instagram_token', '');
+                $emptyMessage = $token === ''
+                    ? __('Add an Instagram Graph API token under Settings → FF Addons, or switch Source to Instagram post URLs.', 'ff-addons')
+                    : __('Could not load Instagram media. Check the token, or use Instagram post URLs instead.', 'ff-addons');
+            }
+        } elseif ($source === 'posts') {
+            foreach ($postUrls as $url) {
+                if (! is_string($url)) {
+                    continue;
+                }
+                $url = $this->normalize_instagram_post_url($url);
+                if ($url === '') {
+                    continue;
+                }
+                $html = $this->get_instagram_post_embed($url);
+                if ($html !== '') {
+                    $embedHtmls[] = ['url' => $url, 'html' => $html];
+                }
+            }
+            if ($embedHtmls !== []) {
+                $mode = 'embeds';
+                wp_enqueue_script('instagram-embed');
+            } else {
+                $emptyMessage = __('Add Instagram post URLs in the widget settings (open a post → Copy link).', 'ff-addons');
+            }
+        } else {
+            foreach ($items as $item) {
+                if (! is_array($item)) {
+                    continue;
+                }
+                $image = (string) ($item['image'] ?? '');
+                if ($image === '') {
+                    continue;
+                }
+                $galleryItems[] = [
+                    'image' => $image,
+                    'caption' => (string) ($item['caption'] ?? ''),
+                    'link' => (string) ($item['link'] ?? ''),
+                ];
+            }
+            if ($galleryItems !== []) {
+                $mode = 'images';
+            } else {
+                $emptyMessage = __('Add gallery images from the Media Library, or switch Source to Instagram post URLs.', 'ff-addons');
+            }
         }
 
         $igIcon = '<svg class="instagram-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 3.691a6.146 6.146 0 1 0 0 12.292 6.146 6.146 0 0 0 0-12.292zm0 10.146a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>';
@@ -545,7 +631,7 @@ class FF_Addons_Plugin
 
         ob_start();
         ?>
-        <div class="instagram-section-wrapper">
+        <div class="ff-addons-instagram instagram-section-wrapper" data-ig-source="<?php echo esc_attr($source); ?>">
             <div class="instagram-container">
                 <div class="instagram-header">
                     <?php if ($subtitle !== '') : ?>
@@ -567,16 +653,17 @@ class FF_Addons_Plugin
                     <?php endif; ?>
                 </div>
 
-                <?php if ($items === []) : ?>
-                    <?php if (FF_Addons_Helpers::is_elementor_edit()) : ?>
-                        <p class="instagram-empty"><?php echo esc_html__('Add gallery items in the widget settings — pick images from the Media Library.', 'ff-addons'); ?></p>
-                    <?php endif; ?>
-                <?php else : ?>
+                <?php if ($mode === 'embeds') : ?>
+                    <div class="instagram-grid instagram-grid--embeds" style="--ff-cols:<?php echo esc_attr((string) $columns); ?>">
+                        <?php foreach ($embedHtmls as $embed) : ?>
+                            <div class="instagram-item instagram-item--embed">
+                                <?php echo $embed['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — oEmbed / official IG embed markup ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php elseif ($mode === 'images') : ?>
                     <div class="instagram-grid" style="--ff-cols:<?php echo esc_attr((string) $columns); ?>">
-                        <?php foreach ($items as $item) :
-                            if (! is_array($item)) {
-                                continue;
-                            }
+                        <?php foreach ($galleryItems as $item) :
                             $image = (string) ($item['image'] ?? '');
                             if ($image === '') {
                                 continue;
@@ -614,6 +701,16 @@ class FF_Addons_Plugin
                             </button>
                         <?php endforeach; ?>
                     </div>
+                <?php else : ?>
+                    <p class="instagram-empty">
+                        <?php echo esc_html($emptyMessage !== '' ? $emptyMessage : __('No Instagram media to show yet.', 'ff-addons')); ?>
+                        <?php if ($profileUrl !== '' && ! FF_Addons_Helpers::is_elementor_edit()) : ?>
+                            <br>
+                            <a class="instagram-empty__link" href="<?php echo esc_url($profileUrl); ?>"<?php echo $profileAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+                                <?php echo esc_html__('Visit our Instagram', 'ff-addons'); ?>
+                            </a>
+                        <?php endif; ?>
+                    </p>
                 <?php endif; ?>
 
                 <?php if ($buttonText !== '' && $profileUrl !== '') : ?>
@@ -629,6 +726,115 @@ class FF_Addons_Plugin
         <?php
 
         return (string) ob_get_clean();
+    }
+
+    /**
+     * Normalize a public Instagram post / reel URL.
+     */
+    private function normalize_instagram_post_url(string $url): string
+    {
+        $url = trim($url);
+        if ($url === '') {
+            return '';
+        }
+        $url = esc_url_raw($url);
+        if ($url === '' || ! preg_match('#^https?://(www\.)?instagram\.com/(p|reel|tv)/[^/\s?#]+#i', $url)) {
+            return '';
+        }
+
+        return untrailingslashit($url) . '/';
+    }
+
+    /**
+     * Official Instagram embed (wp_oembed_get when available, else embed.js blockquote).
+     */
+    private function get_instagram_post_embed(string $url): string
+    {
+        $oembed = wp_oembed_get($url, ['width' => 540]);
+        if (is_string($oembed) && $oembed !== '') {
+            return $oembed;
+        }
+
+        $permalink = esc_url($url);
+
+        return '<blockquote class="instagram-media" data-instgrm-permalink="' . $permalink . '" data-instgrm-version="14" style="background:#FFF;border:0;border-radius:12px;margin:0;max-width:100%;min-width:0;padding:0;width:100%;">'
+            . '<a href="' . $permalink . '" target="_blank" rel="noopener noreferrer">' . esc_html($url) . '</a>'
+            . '</blockquote>';
+    }
+
+    /**
+     * Fetch recent media via Instagram Graph / Basic Display API (long-lived token).
+     *
+     * @return list<array{image: string, caption: string, link: string}>
+     */
+    private function fetch_instagram_graph_media(int $limit = 8): array
+    {
+        $token = trim((string) get_option('ff_addons_instagram_token', ''));
+        if ($token === '') {
+            return [];
+        }
+
+        $cacheKey = 'ff_addons_ig_media_' . md5($token . '|' . $limit);
+        if (! FF_Addons_Helpers::is_elementor_edit()) {
+            $cached = get_transient($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
+        }
+
+        $endpoint = add_query_arg(
+            [
+                'fields' => 'id,caption,media_type,media_url,permalink,thumbnail_url',
+                'limit' => $limit,
+                'access_token' => $token,
+            ],
+            'https://graph.instagram.com/me/media'
+        );
+
+        $response = wp_remote_get($endpoint, [
+            'timeout' => 15,
+            'headers' => ['Accept' => 'application/json'],
+        ]);
+
+        if (is_wp_error($response)) {
+            return [];
+        }
+
+        $code = (int) wp_remote_retrieve_response_code($response);
+        $body = json_decode((string) wp_remote_retrieve_body($response), true);
+        if ($code < 200 || $code >= 300 || ! is_array($body) || ! isset($body['data']) || ! is_array($body['data'])) {
+            return [];
+        }
+
+        $items = [];
+        foreach ($body['data'] as $row) {
+            if (! is_array($row)) {
+                continue;
+            }
+            $type = strtoupper((string) ($row['media_type'] ?? ''));
+            $image = '';
+            if ($type === 'VIDEO' || $type === 'REELS') {
+                $image = (string) ($row['thumbnail_url'] ?? $row['media_url'] ?? '');
+            } else {
+                $image = (string) ($row['media_url'] ?? $row['thumbnail_url'] ?? '');
+            }
+            if ($image === '') {
+                continue;
+            }
+            $items[] = [
+                'image' => $image,
+                'caption' => (string) ($row['caption'] ?? ''),
+                'link' => (string) ($row['permalink'] ?? ''),
+            ];
+            if (count($items) >= $limit) {
+                break;
+            }
+        }
+
+        $ttl = (int) get_option('ff_addons_cache_ttl', 300);
+        set_transient($cacheKey, $items, max(60, $ttl));
+
+        return $items;
     }
 
     /**

@@ -157,11 +157,11 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'label' => __('Accent color', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::COLOR,
             'selectors' => [
-                '{{WRAPPER}} .about-subtitle' => 'color: {{VALUE}};',
-                '{{WRAPPER}} .feature-icon' => 'color: {{VALUE}}; border-color: {{VALUE}}; background-color: color-mix(in srgb, {{VALUE}} 15%, transparent);',
-                '{{WRAPPER}} .about-btn' => 'background-color: {{VALUE}}; box-shadow: 0 4px 15px color-mix(in srgb, {{VALUE}} 30%, transparent);',
-                '{{WRAPPER}} .image-frame::before' => 'border-color: {{VALUE}};',
-                '{{WRAPPER}} .exp-badge' => 'background-color: {{VALUE}};',
+                '{{WRAPPER}} .ff-addons-about .about-subtitle' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .ff-addons-about .feature-icon' => 'color: {{VALUE}}; border-color: {{VALUE}}; background-color: color-mix(in srgb, {{VALUE}} 15%, transparent);',
+                '{{WRAPPER}} .ff-addons-about .about-btn' => 'background-color: {{VALUE}}; box-shadow: 0 4px 15px color-mix(in srgb, {{VALUE}} 30%, transparent);',
+                '{{WRAPPER}} .ff-addons-about .image-frame::before' => 'border-color: {{VALUE}};',
+                '{{WRAPPER}} .ff-addons-about .exp-badge' => 'background-color: {{VALUE}};',
             ],
         ]);
 
@@ -169,7 +169,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'label' => __('Title color', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::COLOR,
             'selectors' => [
-                '{{WRAPPER}} .about-title' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .ff-addons-about .about-title' => 'color: {{VALUE}};',
             ],
         ]);
 
@@ -177,7 +177,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'label' => __('Body text color', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::COLOR,
             'selectors' => [
-                '{{WRAPPER}} .about-text:not(.highlight-text)' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .ff-addons-about .about-text:not(.highlight-text)' => 'color: {{VALUE}};',
             ],
         ]);
 
