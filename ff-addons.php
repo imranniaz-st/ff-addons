@@ -24,6 +24,7 @@ define('FF_ADDONS_BASENAME', plugin_basename(__FILE__));
 
 require_once FF_ADDONS_DIR . 'includes/class-ff-addons-api.php';
 require_once FF_ADDONS_DIR . 'includes/class-ff-addons-helpers.php';
+require_once FF_ADDONS_DIR . 'includes/class-ff-addons-instagram-oauth.php';
 require_once FF_ADDONS_DIR . 'includes/class-ff-addons-admin.php';
 require_once FF_ADDONS_DIR . 'includes/class-ff-addons-plugin.php';
 

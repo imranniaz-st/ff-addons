@@ -42,6 +42,16 @@ class FF_Addons_Admin
             'sanitize_callback' => 'sanitize_text_field',
             'default' => 'Rs.',
         ]);
+        register_setting('ff_addons', 'ff_addons_instagram_app_id', [
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => '',
+        ]);
+        register_setting('ff_addons', 'ff_addons_instagram_app_secret', [
+            'type' => 'string',
+            'sanitize_callback' => [$this, 'sanitize_instagram_app_secret'],
+            'default' => '',
+        ]);
         register_setting('ff_addons', 'ff_addons_instagram_token', [
             'type' => 'string',
             'sanitize_callback' => [$this, 'sanitize_instagram_token'],
@@ -54,10 +64,26 @@ class FF_Addons_Admin
         ]);
     }
 
+    public function sanitize_instagram_app_secret($value): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+        // Password field: empty / mask means keep the stored secret.
+        if ($value === '' || $value === '********') {
+            return (string) get_option('ff_addons_instagram_app_secret', '');
+        }
+
+        return sanitize_text_field($value);
+    }
+
     public function sanitize_instagram_token($value): string
     {
         $value = is_string($value) ? trim($value) : '';
-        if ($value === '') {
+        if ($value === '' || $value === '********') {
+            // Allow clearing via Disconnect; keep existing when the masked password is re-submitted.
+            if ($value === '********') {
+                return (string) get_option('ff_addons_instagram_token', '');
+            }
+
             return '';
         }
 
@@ -104,8 +130,13 @@ class FF_Addons_Admin
             $ok = ! is_wp_error($probe);
         }
 
+        $igAppId = (string) get_option('ff_addons_instagram_app_id', '');
+        $igAppSecret = (string) get_option('ff_addons_instagram_app_secret', '');
         $igToken = (string) get_option('ff_addons_instagram_token', '');
         $igUserId = (string) get_option('ff_addons_instagram_user_id', '');
+        $igConnected = FF_Addons_Instagram_OAuth::is_connected();
+        $igRedirectUri = FF_Addons_Instagram_OAuth::redirect_uri();
+        $igTokenExpires = (int) get_option('ff_addons_instagram_token_expires', 0);
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('FF Addons', 'ff-addons'); ?></h1>
@@ -138,15 +169,107 @@ class FF_Addons_Admin
                                    value="<?php echo esc_attr((string) get_option('ff_addons_currency', 'Rs.')); ?>">
                         </td>
                     </tr>
+                </table>
+
+                <h2><?php echo esc_html__('Instagram Connect', 'ff-addons'); ?></h2>
+                <p class="description">
+                    <?php echo esc_html__('Use Instagram API with Instagram Login (Business Login). Create a Meta app, add the Instagram product, then paste the Instagram App ID and App Secret below (App Dashboard → Instagram → API setup with Instagram business login — not the Meta app ID/secret under Settings → Basic).', 'ff-addons'); ?>
+                </p>
+                <table class="form-table" role="presentation">
+                    <tr>
+                        <th scope="row"><label for="ff_addons_instagram_app_id"><?php echo esc_html__('Instagram App ID', 'ff-addons'); ?></label></th>
+                        <td>
+                            <input type="text" class="regular-text" id="ff_addons_instagram_app_id" name="ff_addons_instagram_app_id"
+                                   value="<?php echo esc_attr($igAppId); ?>"
+                                   autocomplete="off"
+                                   placeholder="<?php echo esc_attr__('Instagram App ID from Meta', 'ff-addons'); ?>">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ff_addons_instagram_app_secret"><?php echo esc_html__('Instagram App Secret', 'ff-addons'); ?></label></th>
+                        <td>
+                            <input type="password" class="regular-text" id="ff_addons_instagram_app_secret" name="ff_addons_instagram_app_secret"
+                                   value="<?php echo $igAppSecret !== '' ? '********' : ''; ?>"
+                                   autocomplete="new-password"
+                                   placeholder="<?php echo esc_attr__('Instagram App Secret', 'ff-addons'); ?>">
+                            <p class="description"><?php echo esc_html__('Stored securely. Leave as masked (or blank) to keep the current secret when saving.', 'ff-addons'); ?></p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php echo esc_html__('OAuth redirect URI', 'ff-addons'); ?></th>
+                        <td>
+                            <code id="ff_addons_ig_redirect_uri" style="display:inline-block;word-break:break-all;"><?php echo esc_html($igRedirectUri); ?></code>
+                            <p class="description">
+                                <?php echo esc_html__('Copy this exact URL into Meta → Instagram → API setup with Instagram business login → Business login settings → Valid OAuth Redirect URIs. Trailing slash and query string must match exactly.', 'ff-addons'); ?>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><?php echo esc_html__('Connection', 'ff-addons'); ?></th>
+                        <td>
+                            <?php if ($igConnected) : ?>
+                                <p style="color:#008a20;margin-top:0;">
+                                    <strong><?php echo esc_html__('Connected', 'ff-addons'); ?></strong>
+                                    <?php if ($igUserId !== '') : ?>
+                                        — <?php echo esc_html(sprintf(
+                                            /* translators: %s: Instagram user id */
+                                            __('User ID %s', 'ff-addons'),
+                                            $igUserId
+                                        )); ?>
+                                    <?php endif; ?>
+                                    <?php if ($igTokenExpires > 0) : ?>
+                                        <br>
+                                        <span class="description">
+                                            <?php echo esc_html(sprintf(
+                                                /* translators: %s: localized date/time */
+                                                __('Long-lived token expires around %s (plugin refreshes weekly while active).', 'ff-addons'),
+                                                wp_date(get_option('date_format') . ' ' . get_option('time_format'), $igTokenExpires)
+                                            )); ?>
+                                        </span>
+                                    <?php endif; ?>
+                                </p>
+                                <p>
+                                    <a class="button button-secondary" href="<?php echo esc_url(FF_Addons_Instagram_OAuth::disconnect_url()); ?>">
+                                        <?php echo esc_html__('Disconnect Instagram', 'ff-addons'); ?>
+                                    </a>
+                                    <?php if (FF_Addons_Instagram_OAuth::has_app_credentials()) : ?>
+                                        <a class="button button-primary" href="<?php echo esc_url(FF_Addons_Instagram_OAuth::connect_url()); ?>">
+                                            <?php echo esc_html__('Reconnect Instagram', 'ff-addons'); ?>
+                                        </a>
+                                    <?php endif; ?>
+                                </p>
+                            <?php else : ?>
+                                <p style="color:#646970;margin-top:0;">
+                                    <strong><?php echo esc_html__('Not connected', 'ff-addons'); ?></strong>
+                                    — <?php echo esc_html__('Save App ID and App Secret, then click Connect Instagram.', 'ff-addons'); ?>
+                                </p>
+                                <p>
+                                    <?php if (FF_Addons_Instagram_OAuth::has_app_credentials()) : ?>
+                                        <a class="button button-primary" href="<?php echo esc_url(FF_Addons_Instagram_OAuth::connect_url()); ?>">
+                                            <?php echo esc_html__('Connect Instagram', 'ff-addons'); ?>
+                                        </a>
+                                    <?php else : ?>
+                                        <button type="button" class="button button-primary" disabled>
+                                            <?php echo esc_html__('Connect Instagram', 'ff-addons'); ?>
+                                        </button>
+                                        <span class="description"><?php echo esc_html__('Save App ID and App Secret first.', 'ff-addons'); ?></span>
+                                    <?php endif; ?>
+                                </p>
+                            <?php endif; ?>
+                            <p class="description">
+                                <?php echo esc_html__('Connect requests the instagram_business_basic scope (read own profile/media). In Development mode only app roles/testers can authorize; Live + App Review is required for other accounts.', 'ff-addons'); ?>
+                            </p>
+                        </td>
+                    </tr>
                     <tr>
                         <th scope="row"><label for="ff_addons_instagram_token"><?php echo esc_html__('Instagram access token', 'ff-addons'); ?></label></th>
                         <td>
                             <input type="password" class="regular-text" id="ff_addons_instagram_token" name="ff_addons_instagram_token"
-                                   value="<?php echo esc_attr($igToken); ?>"
+                                   value="<?php echo $igToken !== '' ? '********' : ''; ?>"
                                    autocomplete="off"
-                                   placeholder="<?php echo esc_attr__('Long-lived Instagram Graph API token', 'ff-addons'); ?>">
+                                   placeholder="<?php echo esc_attr__('Filled by Connect, or paste a long-lived token', 'ff-addons'); ?>">
                             <p class="description">
-                                <?php echo esc_html__('Required for FF Instagram “Auto from Instagram”. Creates a custom thumbnail grid (media_url / caption / permalink) — not Instagram embeds. Use a long-lived token from a Meta app connected to your Instagram professional account.', 'ff-addons'); ?>
+                                <?php echo esc_html__('Usually filled by Connect Instagram. You can still paste a long-lived token manually. Required for FF Instagram “Auto from Instagram” (custom thumbnail grid — not embeds).', 'ff-addons'); ?>
                             </p>
                         </td>
                     </tr>
@@ -159,7 +282,7 @@ class FF_Addons_Admin
                                    pattern="[0-9]*"
                                    placeholder="<?php echo esc_attr__('Numeric Instagram professional account ID', 'ff-addons'); ?>">
                             <p class="description">
-                                <?php echo esc_html__('Only needed if graph.instagram.com/me/media fails and you use a Facebook Graph / Page token. Leave empty for Instagram Login tokens.', 'ff-addons'); ?>
+                                <?php echo esc_html__('Auto-filled by Connect when available. Only needed manually if graph.instagram.com/me/media fails and you use a Facebook Graph / Page token.', 'ff-addons'); ?>
                             </p>
                         </td>
                     </tr>
@@ -179,12 +302,12 @@ class FF_Addons_Admin
             <?php endif; ?>
 
             <h2><?php echo esc_html__('Instagram feed', 'ff-addons'); ?></h2>
-            <?php if ($igToken === '') : ?>
-                <p style="color:#646970;"><strong><?php echo esc_html__('Token not set', 'ff-addons'); ?></strong>
-                    — <?php echo esc_html__('Paste a long-lived token above, then set FF Instagram Source to “Auto from Instagram”.', 'ff-addons'); ?></p>
+            <?php if (! $igConnected) : ?>
+                <p style="color:#646970;"><strong><?php echo esc_html__('Not connected', 'ff-addons'); ?></strong>
+                    — <?php echo esc_html__('Use Connect Instagram above (or paste a token), then set FF Instagram Source to “Auto from Instagram”.', 'ff-addons'); ?></p>
             <?php else : ?>
-                <p style="color:#008a20;"><strong><?php echo esc_html__('Token saved', 'ff-addons'); ?></strong>
-                    — <?php echo esc_html__('Feed refreshes automatically using Cache TTL. Saving a new token clears the media cache.', 'ff-addons'); ?></p>
+                <p style="color:#008a20;"><strong><?php echo esc_html__('Connected', 'ff-addons'); ?></strong>
+                    — <?php echo esc_html__('Feed refreshes automatically using Cache TTL. Connecting or saving a new token clears the media cache.', 'ff-addons'); ?></p>
             <?php endif; ?>
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>

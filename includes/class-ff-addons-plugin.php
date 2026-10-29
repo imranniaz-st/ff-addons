@@ -31,11 +31,23 @@ class FF_Addons_Plugin
         if (get_option('ff_addons_instagram_user_id') === false) {
             add_option('ff_addons_instagram_user_id', '');
         }
+        if (get_option('ff_addons_instagram_app_id') === false) {
+            add_option('ff_addons_instagram_app_id', '');
+        }
+        if (get_option('ff_addons_instagram_app_secret') === false) {
+            add_option('ff_addons_instagram_app_secret', '');
+        }
+        if (get_option('ff_addons_instagram_token_expires') === false) {
+            add_option('ff_addons_instagram_token_expires', 0);
+        }
     }
 
     public function init(): void
     {
         load_plugin_textdomain('ff-addons', false, dirname(FF_ADDONS_BASENAME) . '/languages');
+
+        // Always boot OAuth (admin-post callbacks + weekly token refresh cron).
+        new FF_Addons_Instagram_OAuth();
 
         if (is_admin()) {
             new FF_Addons_Admin();
@@ -650,13 +662,15 @@ class FF_Addons_Plugin
         $token = trim((string) get_option('ff_addons_instagram_token', ''));
         $mode = 'empty';
         $galleryItems = [];
+        // Setup hints are editor-only — never expose admin instructions on the public site.
+        $editorHints = FF_Addons_Helpers::is_elementor_edit();
         $emptyMessage = '';
 
         if ($source === 'api') {
             $galleryItems = $this->fetch_instagram_graph_media($limit);
             if ($galleryItems !== []) {
                 $mode = 'images';
-            } else {
+            } elseif ($editorHints) {
                 $emptyMessage = $token === ''
                     ? __('Add an Instagram access token under Settings → FF Addons for automatic updates, or switch Source to Curated Media Library.', 'ff-addons')
                     : __('Could not load Instagram media. Check the token (and that it is long-lived), or switch Source to Curated Media Library.', 'ff-addons');
@@ -678,7 +692,7 @@ class FF_Addons_Plugin
             }
             if ($galleryItems !== []) {
                 $mode = 'images';
-            } else {
+            } elseif ($editorHints) {
                 $emptyMessage = __('Add gallery images from the Media Library, or switch Source to Auto from Instagram.', 'ff-addons');
             }
         }
@@ -761,16 +775,8 @@ class FF_Addons_Plugin
                             </button>
                         <?php endforeach; ?>
                     </div>
-                <?php else : ?>
-                    <p class="instagram-empty">
-                        <?php echo esc_html($emptyMessage !== '' ? $emptyMessage : __('No Instagram media to show yet.', 'ff-addons')); ?>
-                        <?php if ($profileUrl !== '' && ! FF_Addons_Helpers::is_elementor_edit()) : ?>
-                            <br>
-                            <a class="instagram-empty__link" href="<?php echo esc_url($profileUrl); ?>"<?php echo $profileAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
-                                <?php echo esc_html__('Visit our Instagram', 'ff-addons'); ?>
-                            </a>
-                        <?php endif; ?>
-                    </p>
+                <?php elseif ($emptyMessage !== '') : ?>
+                    <p class="instagram-empty"><?php echo esc_html($emptyMessage); ?></p>
                 <?php endif; ?>
 
                 <?php if ($buttonText !== '' && $profileUrl !== '') : ?>
