@@ -1,0 +1,80 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-ff-addons-hostinger
+  cancel-in-progress: true
+
+env:
+  SSH_HOST: 145.79.26.46
+  SSH_PORT: 65002
+  SSH_USER: u875403732
+  # Standalone clone (not inside the facefood monorepo).
+  DEPLOY_PATH: /home/u875403732/domains/facefood.cafe/repos/ff-addons
+  WP_ROOT: /home/u875403732/domains/facefood.cafe/public_html
+  WP_PLUGIN_LINK: /home/u875403732/domains/facefood.cafe/public_html/wp-content/plugins/ff-addons
+  GITHUB_REPO: imranniaz-st/ff-addons
+
+jobs:
+  ci:
+    name: CI
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: SSH deploy plugin
+    needs: ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Validate secrets
+        shell: bash
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [[ -z "${SSH_PRIVATE_KEY:-}" && -z "${SSH_PASSWORD:-}" ]]; then
+            echo "::error::Add SSH_PRIVATE_KEY (preferred) or SSH_PASSWORD for Hostinger SSH"
+            exit 1
+          fi
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          DEPLOY_GIT_TOKEN: ${{ secrets.DEPLOY_GIT_TOKEN }}
+        with:
+          host: ${{ env.SSH_HOST }}
+          username: ${{ env.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ env.SSH_PORT }}
+          timeout: 120s
+          command_timeout: 10m
+          envs: DEPLOY_PATH,WP_ROOT,WP_PLUGIN_LINK,DEPLOY_GIT_TOKEN,GITHUB_REPO
+          script_stop: true
+          script: |
+            set -euo pipefail
+            export DEPLOY_PATH="${{ env.DEPLOY_PATH }}"
+            export WP_ROOT="${{ env.WP_ROOT }}"
+            export WP_PLUGIN_LINK="${{ env.WP_PLUGIN_LINK }}"
+            export GITHUB_REPO="${{ env.GITHUB_REPO }}"
+            # Optional — public repo works without a token.
+            export GITHUB_PAT="${DEPLOY_GIT_TOKEN:-}"
+
+            mkdir -p "$(dirname "${DEPLOY_PATH}")"
+            if [[ ! -d "${DEPLOY_PATH}/.git" ]]; then
+              echo "==> First clone"
+              if [[ -n "${GITHUB_PAT}" ]]; then
+                git clone "https://x-access-token:${GITHUB_PAT}@github.com/${GITHUB_REPO}.git" "${DEPLOY_PATH}"
+              else
+                git clone "https://github.com/${GITHUB_REPO}.git" "${DEPLOY_PATH}"
+              fi
+            fi
+
+            chmod +x "${DEPLOY_PATH}/scripts/"*.sh
+            bash "${DEPLOY_PATH}/scripts/server-git-pull.sh"
+            bash "${DEPLOY_PATH}/scripts/deploy-hostinger.sh"

@@ -32,6 +32,17 @@ This plugin is a **separate** project from:
 
 See [docs/API.md](docs/API.md) for public, auth, WordPress sync, staff, and admin endpoints.
 
+## Deploy (Hostinger SSH + CI)
+
+Push to `main` runs PHP lint, then SSH-deploys to `facefood.cafe` (symlink into `wp-content/plugins/ff-addons`).
+
+Setup: [.github/DEPLOY_SETUP.md](.github/DEPLOY_SETUP.md)
+
+```bash
+bash scripts/setup-ssh.sh
+ssh hostinger-facefood "echo ok"
+```
+
 ## License
 
 Proprietary — Facefood.
