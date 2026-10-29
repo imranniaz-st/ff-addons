@@ -1,0 +1,39 @@
+.ff-addons-cta {
+  background: linear-gradient(135deg, #00aeef 0%, #0284c7 100%);
+  border-radius: 16px;
+  padding: 2.5rem 1.5rem;
+  color: #fff;
+}
+
+.ff-addons-cta__inner {
+  max-width: 40rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.ff-addons-cta__title {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  color: #fff;
+}
+
+.ff-addons-cta__text {
+  margin: 0 0 1.25rem;
+  opacity: 0.95;
+  line-height: 1.5;
+}
+
+.ff-addons-cta__button {
+  display: inline-block;
+  background: #fff;
+  color: #0284c7;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 0.85rem 1.4rem;
+  border-radius: 14px;
+}
+
+.ff-addons-cta__button:hover,
+.ff-addons-cta__button:focus {
+  color: #0369a1;
+}

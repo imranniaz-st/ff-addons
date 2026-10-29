@@ -34,9 +34,9 @@ class FF_Addons_Plugin
             new FF_Addons_Admin();
         }
 
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
-        add_action('elementor/preview/enqueue_styles', [$this, 'enqueue_assets']);
-        add_action('elementor/editor/after_enqueue_styles', [$this, 'enqueue_assets']);
+        add_action('wp_enqueue_scripts', [$this, 'register_assets']);
+        add_action('elementor/preview/enqueue_styles', [$this, 'enqueue_editor_assets']);
+        add_action('elementor/editor/after_enqueue_styles', [$this, 'enqueue_editor_assets']);
 
         add_shortcode('ff_addons_menu', [$this, 'shortcode_menu']);
         add_shortcode('ff_addons_deals', [$this, 'shortcode_deals']);
@@ -54,15 +54,40 @@ class FF_Addons_Plugin
         });
     }
 
-    public function enqueue_assets(): void
+    public function register_assets(): void
     {
-        wp_register_style(
-            'ff-addons-frontend',
-            FF_ADDONS_URL . 'assets/css/frontend.css',
-            [],
-            FF_ADDONS_VERSION
-        );
-        wp_enqueue_style('ff-addons-frontend');
+        $base = FF_ADDONS_URL . 'assets/css/';
+        $ver = FF_ADDONS_VERSION;
+
+        wp_register_style('ff-addons-base', $base . 'base.css', [], $ver);
+        wp_register_style('ff-addons-deals', $base . 'deals.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-categories', $base . 'categories.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-cta', $base . 'cta.css', ['ff-addons-base'], $ver);
+        // After components so breakpoint rules win over base layouts.
+        wp_register_style('ff-addons-responsive', $base . 'responsive.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-editor', $base . 'editor.css', [], $ver);
+    }
+
+    /** Elementor editor / preview: load all component styles. */
+    public function enqueue_editor_assets(): void
+    {
+        $this->register_assets();
+        wp_enqueue_style('ff-addons-base');
+        wp_enqueue_style('ff-addons-deals');
+        wp_enqueue_style('ff-addons-categories');
+        wp_enqueue_style('ff-addons-cta');
+        wp_enqueue_style('ff-addons-responsive');
+        wp_enqueue_style('ff-addons-editor');
+    }
+
+    /** @param list<string> $handles */
+    private function enqueue_styles(array $handles): void
+    {
+        $this->register_assets();
+        foreach ($handles as $handle) {
+            wp_enqueue_style($handle);
+        }
+        wp_enqueue_style('ff-addons-responsive');
     }
 
     /**
@@ -148,6 +173,8 @@ class FF_Addons_Plugin
      */
     public function render_menu(array $args = []): string
     {
+        $this->enqueue_styles(['ff-addons-base']);
+
         $limit = max(1, min(48, (int) ($args['limit'] ?? 8)));
         $category = (string) ($args['category'] ?? '');
         $columns = max(1, min(6, (int) ($args['columns'] ?? 4)));
@@ -209,6 +236,8 @@ class FF_Addons_Plugin
      */
     public function render_deals(array $args = []): string
     {
+        $this->enqueue_styles(['ff-addons-deals']);
+
         $limit = max(1, min(24, (int) ($args['limit'] ?? 6)));
         $columns = max(1, min(6, (int) ($args['columns'] ?? 3)));
 
@@ -255,6 +284,8 @@ class FF_Addons_Plugin
      */
     public function render_cta(array $args = []): string
     {
+        $this->enqueue_styles(['ff-addons-cta']);
+
         $title = (string) ($args['title'] ?? __('Order Facefood', 'ff-addons'));
         $text = (string) ($args['text'] ?? '');
         $button = (string) ($args['button'] ?? __('Order now', 'ff-addons'));
@@ -285,6 +316,8 @@ class FF_Addons_Plugin
      */
     public function render_categories(array $args = []): string
     {
+        $this->enqueue_styles(['ff-addons-categories']);
+
         $layout = (string) ($args['layout'] ?? 'grid');
         $columns = max(2, min(8, (int) ($args['columns'] ?? 6)));
         $linkBase = (string) ($args['link_base'] ?? '');

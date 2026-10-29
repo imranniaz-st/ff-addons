@@ -31,6 +31,11 @@ class FF_Addons_Widget_Cta extends FF_Addons_Widget_Base
         return ['ff-addons-general'];
     }
 
+    public function get_style_depends(): array
+    {
+        return ['ff-addons-cta', 'ff-addons-responsive'];
+    }
+
     protected function register_controls(): void
     {
         $this->start_controls_section('content', [

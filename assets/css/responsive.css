@@ -1,0 +1,32 @@
+/* Grid / menu / deals cards */
+@media (max-width: 900px) {
+  .ff-addons-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ff-addons-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Categories */
+@media (max-width: 900px) {
+  .ff-addons-categories--grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .ff-addons-categories--grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* CTA — tighten padding on small screens (title already fluid via clamp) */
+@media (max-width: 560px) {
+  .ff-addons-cta {
+    padding: 1.75rem 1.15rem;
+  }
+}

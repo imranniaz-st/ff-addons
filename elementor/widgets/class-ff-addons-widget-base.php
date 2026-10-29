@@ -31,7 +31,7 @@ abstract class FF_Addons_Widget_Base extends \Elementor\Widget_Base
 
     public function get_style_depends(): array
     {
-        return ['ff-addons-frontend'];
+        return ['ff-addons-base', 'ff-addons-responsive'];
     }
 
     protected function add_columns_control(string $default = '4'): void

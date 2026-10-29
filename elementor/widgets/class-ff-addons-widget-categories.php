@@ -31,6 +31,11 @@ class FF_Addons_Widget_Categories extends FF_Addons_Widget_Base
         return ['ff-addons-menu', 'ff-addons-general'];
     }
 
+    public function get_style_depends(): array
+    {
+        return ['ff-addons-categories', 'ff-addons-responsive'];
+    }
+
     protected function register_controls(): void
     {
         $catOptions = FF_Addons_Helpers::category_options(false);
