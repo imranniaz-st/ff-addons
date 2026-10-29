@@ -5,6 +5,7 @@
 .elementor-editor-active .ff-addons-about.about-section-wrapper,
 .elementor-editor-active .about-section-wrapper,
 .elementor-editor-active .ff-addons-instagram.instagram-section-wrapper,
-.elementor-editor-active .instagram-section-wrapper {
+.elementor-editor-active .instagram-section-wrapper,
+.elementor-editor-active .ff-addons-right-for-you {
   min-height: 48px;
 }

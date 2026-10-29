@@ -1,0 +1,128 @@
+/* Right For You — image + copy article (from article.right-for-you) */
+.ff-addons-right-for-you {
+  padding: 40px 16px;
+  color: rgb(86, 86, 86);
+  font-family: "Poppins", sans-serif;
+  font-size: 17px;
+  font-weight: 300;
+  letter-spacing: 0.55px;
+  line-height: 28px;
+  text-align: left;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.ff-addons-right-for-you__inner {
+  margin: 0 52px;
+  padding: 0 16px;
+  gap: 20px;
+  align-items: center;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  max-width: 1246px;
+  width: 100%;
+}
+
+.ff-addons-right-for-you__title {
+  margin: 0;
+  color: rgb(27, 38, 42);
+  font-family: "Poppins", sans-serif;
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 46px;
+}
+
+.ff-addons-right-for-you__title--mobile {
+  display: none;
+  font-size: 30px;
+  letter-spacing: 0.81px;
+  line-height: 34px;
+}
+
+.ff-addons-right-for-you__image,
+.ff-addons-right-for-you__image-placeholder {
+  border-radius: 20px;
+  display: block;
+  max-width: 100%;
+  object-fit: contain;
+  user-select: none;
+  width: 590px;
+  height: 590px;
+  flex-shrink: 0;
+}
+
+.ff-addons-right-for-you__image-placeholder {
+  background: #eef2f4;
+}
+
+.ff-addons-right-for-you__content {
+  gap: 24px;
+  display: flex;
+  flex-direction: column;
+  max-width: 486px;
+  min-width: 0;
+}
+
+.ff-addons-right-for-you__body {
+  display: block;
+}
+
+.ff-addons-right-for-you__text {
+  margin: 0 0 25px;
+  color: rgb(66, 89, 98);
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 300;
+  letter-spacing: 0.55px;
+  line-height: 28px;
+}
+
+.ff-addons-right-for-you__text:last-child {
+  margin-bottom: 0;
+}
+
+.ff-addons-right-for-you__actions {
+  gap: 16px;
+  display: flex;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.ff-addons-right-for-you__button {
+  padding: 14px 24px;
+  border-radius: 40px;
+  border: 1px solid rgb(27, 38, 42);
+  box-sizing: border-box;
+  color: rgb(27, 38, 42);
+  cursor: pointer;
+  display: block;
+  font-family: "Poppins", sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 18px;
+  text-align: center;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.ff-addons-right-for-you__button:hover {
+  color: rgb(0, 167, 169);
+  text-decoration: none;
+  opacity: 0.7;
+}
+
+.ff-addons-right-for-you__button:focus {
+  opacity: 1;
+  outline: 3px solid #4aeda8;
+}
+
+.ff-addons-right-for-you__button:hover:focus {
+  opacity: 1;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+  outline: none;
+}

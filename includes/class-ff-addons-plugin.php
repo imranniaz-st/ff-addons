@@ -82,12 +82,19 @@ class FF_Addons_Plugin
             [],
             null
         );
+        wp_register_style(
+            'ff-addons-fonts-right-for-you',
+            'https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap',
+            [],
+            null
+        );
         wp_register_style('ff-addons-base', $css . 'base.css', [], $ver);
         wp_register_style('ff-addons-deals', $css . 'deals.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-categories', $css . 'categories.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-cta', $css . 'cta.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-about', $css . 'about.css', ['ff-addons-base', 'ff-addons-fonts-about'], $ver);
         wp_register_style('ff-addons-instagram', $css . 'instagram.css', ['ff-addons-base', 'ff-addons-fonts-about'], $ver);
+        wp_register_style('ff-addons-right-for-you', $css . 'right-for-you.css', ['ff-addons-base', 'ff-addons-fonts-right-for-you'], $ver);
         // Enqueued after component handles so breakpoint rules win.
         wp_register_style('ff-addons-responsive', $css . 'responsive.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-editor', $css . 'editor.css', [], $ver);
@@ -107,12 +114,14 @@ class FF_Addons_Plugin
     {
         $this->register_assets();
         wp_enqueue_style('ff-addons-fonts-about');
+        wp_enqueue_style('ff-addons-fonts-right-for-you');
         wp_enqueue_style('ff-addons-base');
         wp_enqueue_style('ff-addons-deals');
         wp_enqueue_style('ff-addons-categories');
         wp_enqueue_style('ff-addons-cta');
         wp_enqueue_style('ff-addons-about');
         wp_enqueue_style('ff-addons-instagram');
+        wp_enqueue_style('ff-addons-right-for-you');
         wp_enqueue_style('ff-addons-responsive');
         wp_enqueue_style('ff-addons-editor');
         wp_enqueue_script('ff-addons-instagram');
@@ -520,6 +529,89 @@ class FF_Addons_Plugin
                 </div>
             </div>
         </div>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Right For You — image + copy article with CTA.
+     *
+     * @param  array<string, mixed>  $args
+     */
+    public function render_right_for_you(array $args = []): string
+    {
+        $this->enqueue_styles(['ff-addons-right-for-you']);
+
+        $title = (string) ($args['title'] ?? '');
+        $text = (string) ($args['text'] ?? '');
+        $textSecondary = (string) ($args['text_secondary'] ?? '');
+        $buttonText = (string) ($args['button_text'] ?? '');
+        $buttonUrl = (string) ($args['button_url'] ?? '');
+        $buttonExternal = ! empty($args['button_external']);
+        $buttonNofollow = ! empty($args['button_nofollow']);
+        $image = (string) ($args['image'] ?? '');
+        $imageAlt = (string) ($args['image_alt'] ?? $title);
+
+        $rel = [];
+        if ($buttonNofollow) {
+            $rel[] = 'nofollow';
+        }
+        if ($buttonExternal) {
+            $rel[] = 'noopener';
+            $rel[] = 'noreferrer';
+        }
+
+        ob_start();
+        ?>
+        <article class="ff-addons-right-for-you">
+            <div class="ff-addons-right-for-you__inner">
+                <?php if ($title !== '') : ?>
+                    <h2 class="ff-addons-right-for-you__title ff-addons-right-for-you__title--mobile"><?php echo esc_html($title); ?></h2>
+                <?php endif; ?>
+
+                <?php if ($image !== '') : ?>
+                    <img
+                        class="ff-addons-right-for-you__image"
+                        src="<?php echo esc_url($image); ?>"
+                        alt="<?php echo esc_attr($imageAlt !== '' ? $imageAlt : $title); ?>"
+                        loading="lazy"
+                        width="590"
+                        height="590"
+                    >
+                <?php else : ?>
+                    <span class="ff-addons-right-for-you__image-placeholder" aria-hidden="true"></span>
+                <?php endif; ?>
+
+                <div class="ff-addons-right-for-you__content">
+                    <?php if ($title !== '') : ?>
+                        <h2 class="ff-addons-right-for-you__title ff-addons-right-for-you__title--desktop"><?php echo esc_html($title); ?></h2>
+                    <?php endif; ?>
+
+                    <?php if ($text !== '' || $textSecondary !== '') : ?>
+                        <div class="ff-addons-right-for-you__body">
+                            <?php if ($text !== '') : ?>
+                                <p class="ff-addons-right-for-you__text"><?php echo esc_html($text); ?></p>
+                            <?php endif; ?>
+                            <?php if ($textSecondary !== '') : ?>
+                                <p class="ff-addons-right-for-you__text"><?php echo esc_html($textSecondary); ?></p>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+
+                    <?php if ($buttonText !== '' && $buttonUrl !== '') : ?>
+                        <div class="ff-addons-right-for-you__actions">
+                            <a
+                                class="ff-addons-right-for-you__button"
+                                href="<?php echo esc_url($buttonUrl); ?>"
+                                <?php if ($buttonExternal) : ?>target="_blank"<?php endif; ?>
+                                <?php if ($rel !== []) : ?>rel="<?php echo esc_attr(implode(' ', $rel)); ?>"<?php endif; ?>
+                            ><?php echo esc_html($buttonText); ?></a>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </article>
         <?php
 
         return (string) ob_get_clean();

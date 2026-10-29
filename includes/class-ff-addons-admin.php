@@ -141,7 +141,7 @@ class FF_Addons_Admin
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>
             <ul>
-                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF About Us, FF Instagram, FF CTA</li>
+                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF About Us, FF Instagram, FF Right For You, FF CTA</li>
                 <li><strong><?php echo esc_html__('FF Addons · Menu', 'ff-addons'); ?></strong> — FF Categories, FF Menu</li>
                 <li><strong><?php echo esc_html__('FF Addons · Offers', 'ff-addons'); ?></strong> — FF Deals</li>
             </ul>
