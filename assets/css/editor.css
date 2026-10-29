@@ -2,6 +2,6 @@
 .elementor-editor-active .ff-addons-grid,
 .elementor-editor-active .ff-addons-categories,
 .elementor-editor-active .ff-addons-cta,
-.elementor-editor-active .ff-addons-about {
+.elementor-editor-active .about-section-wrapper {
   min-height: 48px;
 }

@@ -71,12 +71,18 @@ class FF_Addons_Plugin
         $base = FF_ADDONS_URL . 'assets/css/';
         $ver = FF_ADDONS_VERSION;
 
+        wp_register_style(
+            'ff-addons-fonts-about',
+            'https://fonts.googleapis.com/css2?family=Kanit:wght@600;800&family=Montserrat:wght@400;600;700;800&display=swap',
+            [],
+            null
+        );
         wp_register_style('ff-addons-base', $base . 'base.css', [], $ver);
         wp_register_style('ff-addons-deals', $base . 'deals.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-categories', $base . 'categories.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-cta', $base . 'cta.css', ['ff-addons-base'], $ver);
-        wp_register_style('ff-addons-about', $base . 'about.css', ['ff-addons-base'], $ver);
-        // After components so breakpoint rules win over base layouts.
+        wp_register_style('ff-addons-about', $base . 'about.css', ['ff-addons-base', 'ff-addons-fonts-about'], $ver);
+        // Enqueued after component handles so breakpoint rules win.
         wp_register_style('ff-addons-responsive', $base . 'responsive.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-editor', $base . 'editor.css', [], $ver);
     }
@@ -85,6 +91,7 @@ class FF_Addons_Plugin
     public function enqueue_editor_assets(): void
     {
         $this->register_assets();
+        wp_enqueue_style('ff-addons-fonts-about');
         wp_enqueue_style('ff-addons-base');
         wp_enqueue_style('ff-addons-deals');
         wp_enqueue_style('ff-addons-categories');
@@ -188,30 +195,41 @@ class FF_Addons_Plugin
     public function shortcode_about($atts = [], ?string $content = null): string
     {
         $atts = shortcode_atts([
-            'title' => __('About Us', 'ff-addons'),
-            'description' => '',
+            'subtitle' => __('OUR STORY & PASSION', 'ff-addons'),
+            'title' => __('Crafting Flavor-Packed Moments In Every Single Bite.', 'ff-addons'),
+            'text' => __("We don't just cook food; we craft crave-worthy culinary experiences. From sizzle-hot burgers loaded with premium melted cheese to hand-crafted shawarmas burst with authentic spices, every dish is prepared fresh using 100% natural, top-tier ingredients.", 'ff-addons'),
+            'highlight_text' => __('Fast service, hygienic preparation, and unmatched taste — served hot straight to your table or delivered right to your doorstep.', 'ff-addons'),
+            'features' => '100% Fresh & Organic|Master Chefs|Fast Doorstep Delivery|Hygienic Kitchen',
+            'button_text' => __('Explore Our Story', 'ff-addons'),
+            'button_url' => '#menu',
+            'badge_number' => __('10+', 'ff-addons'),
+            'badge_text' => __('Years Of Excellence', 'ff-addons'),
             'image' => '',
-            'image_alt' => __('About Us', 'ff-addons'),
-            'primary_button' => __('Learn more', 'ff-addons'),
-            'primary_url' => home_url('/'),
-            'secondary_button' => __('Contact us', 'ff-addons'),
-            'secondary_url' => home_url('/'),
+            'image_alt' => __('Our Restaurant Kitchen', 'ff-addons'),
         ], $atts, 'ff_addons_about');
 
-        $description = (string) $atts['description'];
+        $text = (string) $atts['text'];
         if (is_string($content) && trim($content) !== '') {
-            $description = $content;
+            $text = $content;
+        }
+
+        $features = [];
+        foreach (array_filter(array_map('trim', explode('|', (string) $atts['features']))) as $label) {
+            $features[] = ['icon' => '✓', 'text' => $label];
         }
 
         return $this->render_about([
+            'subtitle' => (string) $atts['subtitle'],
             'title' => (string) $atts['title'],
-            'description' => $description,
+            'text' => $text,
+            'highlight_text' => (string) $atts['highlight_text'],
+            'features' => $features,
+            'button_text' => (string) $atts['button_text'],
+            'button_url' => (string) $atts['button_url'],
+            'badge_number' => (string) $atts['badge_number'],
+            'badge_text' => (string) $atts['badge_text'],
             'image' => (string) $atts['image'],
             'image_alt' => (string) $atts['image_alt'],
-            'primary_button' => (string) $atts['primary_button'],
-            'primary_url' => (string) $atts['primary_url'],
-            'secondary_button' => (string) $atts['secondary_button'],
-            'secondary_url' => (string) $atts['secondary_url'],
         ]);
     }
 
@@ -365,53 +383,90 @@ class FF_Addons_Plugin
     {
         $this->enqueue_styles(['ff-addons-about']);
 
-        $title = (string) ($args['title'] ?? __('About Us', 'ff-addons'));
-        $description = (string) ($args['description'] ?? '');
+        $subtitle = (string) ($args['subtitle'] ?? '');
+        $title = (string) ($args['title'] ?? '');
+        $text = (string) ($args['text'] ?? '');
+        $highlightText = (string) ($args['highlight_text'] ?? '');
+        $features = $args['features'] ?? [];
+        if (! is_array($features)) {
+            $features = [];
+        }
+        $buttonText = (string) ($args['button_text'] ?? '');
+        $buttonUrl = (string) ($args['button_url'] ?? '');
+        $badgeNumber = (string) ($args['badge_number'] ?? '');
+        $badgeText = (string) ($args['badge_text'] ?? '');
         $image = (string) ($args['image'] ?? '');
         $imageAlt = (string) ($args['image_alt'] ?? $title);
-        $primaryButton = (string) ($args['primary_button'] ?? __('Learn more', 'ff-addons'));
-        $primaryUrl = (string) ($args['primary_url'] ?? home_url('/'));
-        $secondaryButton = (string) ($args['secondary_button'] ?? __('Contact us', 'ff-addons'));
-        $secondaryUrl = (string) ($args['secondary_url'] ?? home_url('/'));
 
         ob_start();
         ?>
-        <section class="ff-addons-about">
-            <?php if ($image !== '') : ?>
-                <picture class="ff-addons-about__picture">
-                    <img
-                        class="ff-addons-about__image"
-                        src="<?php echo esc_url($image); ?>"
-                        alt="<?php echo esc_attr($imageAlt !== '' ? $imageAlt : $title); ?>"
-                        loading="lazy"
-                    >
-                </picture>
-            <?php endif; ?>
-            <div class="ff-addons-about__container">
-                <div class="ff-addons-about__content">
+        <div class="about-section-wrapper">
+            <div class="about-container">
+                <div class="about-content">
+                    <?php if ($subtitle !== '') : ?>
+                        <span class="about-subtitle"><?php echo esc_html($subtitle); ?></span>
+                    <?php endif; ?>
                     <?php if ($title !== '') : ?>
-                        <div class="ff-addons-about__heading">
-                            <h1 class="ff-addons-about__title"><?php echo esc_html($title); ?></h1>
+                        <h2 class="about-title"><?php echo esc_html($title); ?></h2>
+                    <?php endif; ?>
+                    <?php if ($text !== '') : ?>
+                        <p class="about-text"><?php echo esc_html($text); ?></p>
+                    <?php endif; ?>
+                    <?php if ($highlightText !== '') : ?>
+                        <p class="about-text highlight-text"><?php echo esc_html($highlightText); ?></p>
+                    <?php endif; ?>
+
+                    <?php if ($features !== []) : ?>
+                        <div class="about-features">
+                            <?php foreach ($features as $feature) :
+                                if (! is_array($feature)) {
+                                    continue;
+                                }
+                                $icon = (string) ($feature['icon'] ?? '✓');
+                                $featureText = (string) ($feature['text'] ?? '');
+                                if ($featureText === '') {
+                                    continue;
+                                }
+                                ?>
+                                <div class="feature-item">
+                                    <div class="feature-icon"><?php echo esc_html($icon !== '' ? $icon : '✓'); ?></div>
+                                    <span><?php echo esc_html($featureText); ?></span>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                     <?php endif; ?>
-                    <?php if ($description !== '') : ?>
-                        <div class="ff-addons-about__body">
-                            <div class="ff-addons-about__text"><?php echo wp_kses_post($description); ?></div>
-                        </div>
-                    <?php endif; ?>
-                    <?php if (($primaryButton !== '' && $primaryUrl !== '') || ($secondaryButton !== '' && $secondaryUrl !== '')) : ?>
-                        <div class="ff-addons-about__actions">
-                            <?php if ($primaryButton !== '' && $primaryUrl !== '') : ?>
-                                <a class="ff-addons-about__btn ff-addons-about__btn--primary" href="<?php echo esc_url($primaryUrl); ?>"><?php echo esc_html($primaryButton); ?></a>
-                            <?php endif; ?>
-                            <?php if ($secondaryButton !== '' && $secondaryUrl !== '') : ?>
-                                <a class="ff-addons-about__btn ff-addons-about__btn--secondary" href="<?php echo esc_url($secondaryUrl); ?>"><?php echo esc_html($secondaryButton); ?></a>
-                            <?php endif; ?>
-                        </div>
+
+                    <?php if ($buttonText !== '' && $buttonUrl !== '') : ?>
+                        <a href="<?php echo esc_url($buttonUrl); ?>" class="about-btn"><?php echo esc_html($buttonText); ?></a>
                     <?php endif; ?>
                 </div>
+
+                <div class="about-image-wrapper">
+                    <div class="image-frame">
+                        <?php if ($image !== '') : ?>
+                            <img
+                                src="<?php echo esc_url($image); ?>"
+                                alt="<?php echo esc_attr($imageAlt !== '' ? $imageAlt : $title); ?>"
+                                loading="lazy"
+                            >
+                        <?php else : ?>
+                            <span class="about-image-placeholder" aria-hidden="true"></span>
+                        <?php endif; ?>
+
+                        <?php if ($badgeNumber !== '' || $badgeText !== '') : ?>
+                            <div class="exp-badge">
+                                <?php if ($badgeNumber !== '') : ?>
+                                    <span class="exp-number"><?php echo esc_html($badgeNumber); ?></span>
+                                <?php endif; ?>
+                                <?php if ($badgeText !== '') : ?>
+                                    <span class="exp-text"><?php echo esc_html($badgeText); ?></span>
+                                <?php endif; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
-        </section>
+        </div>
         <?php
 
         return (string) ob_get_clean();

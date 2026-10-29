@@ -33,7 +33,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
 
     public function get_style_depends(): array
     {
-        return ['ff-addons-about', 'ff-addons-responsive'];
+        return ['ff-addons-fonts-about', 'ff-addons-base', 'ff-addons-about', 'ff-addons-responsive'];
     }
 
     protected function register_controls(): void
@@ -42,18 +42,93 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'label' => __('Content', 'ff-addons'),
         ]);
 
-        $this->add_control('title', [
-            'label' => __('Title', 'ff-addons'),
+        $this->add_control('subtitle', [
+            'label' => __('Subtitle', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('About Us', 'ff-addons'),
+            'default' => __('OUR STORY & PASSION', 'ff-addons'),
             'label_block' => true,
             'dynamic' => ['active' => true],
         ]);
 
-        $this->add_control('description', [
-            'label' => __('Description', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::WYSIWYG,
-            'default' => '<p>' . esc_html__('Add a short introduction about your business, team, or story.', 'ff-addons') . '</p>',
+        $this->add_control('title', [
+            'label' => __('Title', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::TEXTAREA,
+            'default' => __('Crafting Flavor-Packed Moments In Every Single Bite.', 'ff-addons'),
+            'label_block' => true,
+            'dynamic' => ['active' => true],
+        ]);
+
+        $this->add_control('text', [
+            'label' => __('Text', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::TEXTAREA,
+            'default' => __("We don't just cook food; we craft crave-worthy culinary experiences. From sizzle-hot burgers loaded with premium melted cheese to hand-crafted shawarmas burst with authentic spices, every dish is prepared fresh using 100% natural, top-tier ingredients.", 'ff-addons'),
+            'rows' => 5,
+            'dynamic' => ['active' => true],
+        ]);
+
+        $this->add_control('highlight_text', [
+            'label' => __('Highlight text', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::TEXTAREA,
+            'default' => __('Fast service, hygienic preparation, and unmatched taste — served hot straight to your table or delivered right to your doorstep.', 'ff-addons'),
+            'rows' => 3,
+            'dynamic' => ['active' => true],
+        ]);
+
+        $this->add_control('features', [
+            'label' => __('Features', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::REPEATER,
+            'fields' => [
+                [
+                    'name' => 'icon',
+                    'label' => __('Icon', 'ff-addons'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                    'default' => '✓',
+                ],
+                [
+                    'name' => 'text',
+                    'label' => __('Text', 'ff-addons'),
+                    'type' => \Elementor\Controls_Manager::TEXT,
+                    'default' => '',
+                    'label_block' => true,
+                ],
+            ],
+            'default' => [
+                ['icon' => '✓', 'text' => __('100% Fresh & Organic', 'ff-addons')],
+                ['icon' => '✓', 'text' => __('Master Chefs', 'ff-addons')],
+                ['icon' => '✓', 'text' => __('Fast Doorstep Delivery', 'ff-addons')],
+                ['icon' => '✓', 'text' => __('Hygienic Kitchen', 'ff-addons')],
+            ],
+            'title_field' => '{{{ text }}}',
+        ]);
+
+        $this->add_control('button_text', [
+            'label' => __('Button text', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::TEXT,
+            'default' => __('Explore Our Story', 'ff-addons'),
+            'dynamic' => ['active' => true],
+        ]);
+
+        $this->add_control('button_url', [
+            'label' => __('Button URL', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::URL,
+            'default' => [
+                'url' => '#menu',
+            ],
+            'dynamic' => ['active' => true],
+        ]);
+
+        $this->add_control('badge_number', [
+            'label' => __('Badge number', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::TEXT,
+            'default' => __('10+', 'ff-addons'),
+            'dynamic' => ['active' => true],
+        ]);
+
+        $this->add_control('badge_text', [
+            'label' => __('Badge text', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::TEXT,
+            'default' => __('Years Of Excellence', 'ff-addons'),
+            'dynamic' => ['active' => true],
         ]);
 
         $this->add_control('image', [
@@ -67,39 +142,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
         $this->add_control('image_alt', [
             'label' => __('Image alt text', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('About Us', 'ff-addons'),
-            'dynamic' => ['active' => true],
-        ]);
-
-        $this->add_control('primary_button', [
-            'label' => __('Primary button label', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('Learn more', 'ff-addons'),
-            'dynamic' => ['active' => true],
-        ]);
-
-        $this->add_control('primary_url', [
-            'label' => __('Primary button URL', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::URL,
-            'default' => [
-                'url' => home_url('/'),
-            ],
-            'dynamic' => ['active' => true],
-        ]);
-
-        $this->add_control('secondary_button', [
-            'label' => __('Secondary button label', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('Contact us', 'ff-addons'),
-            'dynamic' => ['active' => true],
-        ]);
-
-        $this->add_control('secondary_url', [
-            'label' => __('Secondary button URL', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::URL,
-            'default' => [
-                'url' => home_url('/'),
-            ],
+            'default' => __('Our Restaurant Kitchen', 'ff-addons'),
             'dynamic' => ['active' => true],
         ]);
 
@@ -110,43 +153,31 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'tab' => \Elementor\Controls_Manager::TAB_STYLE,
         ]);
 
+        $this->add_control('accent_color', [
+            'label' => __('Accent color', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::COLOR,
+            'selectors' => [
+                '{{WRAPPER}} .about-subtitle' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .feature-icon' => 'color: {{VALUE}}; border-color: {{VALUE}}; background-color: color-mix(in srgb, {{VALUE}} 15%, transparent);',
+                '{{WRAPPER}} .about-btn' => 'background-color: {{VALUE}}; box-shadow: 0 4px 15px color-mix(in srgb, {{VALUE}} 30%, transparent);',
+                '{{WRAPPER}} .image-frame::before' => 'border-color: {{VALUE}};',
+                '{{WRAPPER}} .exp-badge' => 'background-color: {{VALUE}};',
+            ],
+        ]);
+
         $this->add_control('title_color', [
             'label' => __('Title color', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::COLOR,
             'selectors' => [
-                '{{WRAPPER}} .ff-addons-about__title' => 'color: {{VALUE}};',
+                '{{WRAPPER}} .about-title' => 'color: {{VALUE}};',
             ],
         ]);
 
         $this->add_control('text_color', [
-            'label' => __('Text color', 'ff-addons'),
+            'label' => __('Body text color', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::COLOR,
             'selectors' => [
-                '{{WRAPPER}} .ff-addons-about' => 'color: {{VALUE}};',
-            ],
-        ]);
-
-        $this->add_control('primary_btn_bg', [
-            'label' => __('Primary button background', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [
-                '{{WRAPPER}} .ff-addons-about__btn--primary' => 'background-color: {{VALUE}}; border-color: {{VALUE}};',
-            ],
-        ]);
-
-        $this->add_control('primary_btn_color', [
-            'label' => __('Primary button text', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [
-                '{{WRAPPER}} .ff-addons-about__btn--primary' => 'color: {{VALUE}};',
-            ],
-        ]);
-
-        $this->add_control('secondary_btn_color', [
-            'label' => __('Secondary button text', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::COLOR,
-            'selectors' => [
-                '{{WRAPPER}} .ff-addons-about__btn--secondary' => 'color: {{VALUE}}; border-color: {{VALUE}};',
+                '{{WRAPPER}} .about-text:not(.highlight-text)' => 'color: {{VALUE}};',
             ],
         ]);
 
@@ -157,19 +188,22 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
     {
         $s = $this->get_settings_for_display();
         $image = is_array($s['image'] ?? null) ? (string) ($s['image']['url'] ?? '') : '';
-        $primaryUrl = is_array($s['primary_url'] ?? null) ? (string) ($s['primary_url']['url'] ?? '') : '';
-        $secondaryUrl = is_array($s['secondary_url'] ?? null) ? (string) ($s['secondary_url']['url'] ?? '') : '';
+        $buttonUrl = is_array($s['button_url'] ?? null) ? (string) ($s['button_url']['url'] ?? '') : '';
+        $features = is_array($s['features'] ?? null) ? $s['features'] : [];
 
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo FF_Addons_Plugin::instance()->render_about([
+            'subtitle' => (string) ($s['subtitle'] ?? ''),
             'title' => (string) ($s['title'] ?? ''),
-            'description' => (string) ($s['description'] ?? ''),
+            'text' => (string) ($s['text'] ?? ''),
+            'highlight_text' => (string) ($s['highlight_text'] ?? ''),
+            'features' => $features,
+            'button_text' => (string) ($s['button_text'] ?? ''),
+            'button_url' => $buttonUrl,
+            'badge_number' => (string) ($s['badge_number'] ?? ''),
+            'badge_text' => (string) ($s['badge_text'] ?? ''),
             'image' => $image,
             'image_alt' => (string) ($s['image_alt'] ?? ''),
-            'primary_button' => (string) ($s['primary_button'] ?? ''),
-            'primary_url' => $primaryUrl,
-            'secondary_button' => (string) ($s['secondary_button'] ?? ''),
-            'secondary_url' => $secondaryUrl,
         ]);
     }
 }

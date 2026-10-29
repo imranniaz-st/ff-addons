@@ -1,142 +1,186 @@
-.ff-addons-about {
-  position: relative;
-  display: flex;
-  color: #565656;
-  font-family: Poppins, "Segoe UI", sans-serif;
-  font-size: 17px;
-  font-weight: 300;
-  letter-spacing: 0.55px;
-  line-height: 28px;
-  min-height: 678px;
-  text-align: left;
-  height: 100%;
+/* About Us — restaurant / story template */
+.about-section-wrapper {
+  width: 100%;
+  background-color: #fff;
+  padding: 80px 20px;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+  color: #000;
+  overflow: hidden;
 }
 
-.ff-addons-about__picture {
-  display: block;
-}
-
-.ff-addons-about__image {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  display: block;
-  max-width: 100%;
-  width: calc(50% - 10px);
-  height: 100%;
-  object-fit: cover;
-  object-position: 0% 50%;
-  user-select: none;
-}
-
-.ff-addons-about__container {
+.about-container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
-  box-sizing: border-box;
   display: flex;
   align-items: center;
-  max-width: 1246px;
-  width: 100%;
+  justify-content: space-between;
+  gap: 50px;
 }
 
-.ff-addons-about__content {
-  display: flex;
-  flex-direction: column;
-  max-width: 506px;
+.about-content {
+  flex: 1;
+  max-width: 580px;
 }
 
-.ff-addons-about__heading {
-  order: 1;
-}
-
-.ff-addons-about__title {
-  margin: 0 0 24px;
-  position: relative;
-  z-index: 1;
-  color: #1b262a;
-  font-size: 50px;
-  font-weight: 500;
-  letter-spacing: normal;
-  line-height: 54px;
-  width: 100%;
-  height: auto;
-}
-
-.ff-addons-about__body {
-  order: 2;
-}
-
-.ff-addons-about__text {
-  margin: 0;
-}
-
-.ff-addons-about__text p {
-  margin: 0 0 1em;
-}
-
-.ff-addons-about__text p:last-child {
-  margin-bottom: 0;
-}
-
-.ff-addons-about__actions {
-  margin: 16px 0;
-  gap: 24px;
-  align-items: center;
-  display: flex;
-  order: 3;
-}
-
-.ff-addons-about__btn {
-  box-sizing: border-box;
-  border-radius: 40px;
-  border: 1px solid #1b262a;
-  cursor: pointer;
+.about-subtitle {
+  color: #388cb6;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
   display: block;
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 18px;
-  text-align: center;
+  margin-bottom: 10px;
+}
+
+.about-title {
+  color: #000;
+  font-size: 38px;
+  font-weight: 800;
+  line-height: 46px;
+  margin: 0 0 18px 0;
+  font-family: "Kanit", sans-serif;
+}
+
+.about-text {
+  color: #888;
+  font-size: 15px;
+  line-height: 25px;
+  margin-bottom: 12px;
+}
+
+.about-text.highlight-text {
+  color: #000;
+  font-weight: 600;
+}
+
+.about-features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 20px;
+  margin: 25px 0 30px 0;
+}
+
+.feature-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.feature-icon {
+  width: 22px;
+  height: 22px;
+  background-color: rgba(56, 140, 182, 0.15);
+  border: 1px solid #388cb6;
+  color: #388cb6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.feature-item span {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.about-btn {
+  display: inline-block;
+  background-color: #388cb6;
+  color: #ffffff;
+  padding: 14px 32px;
+  border-radius: 50px;
+  font-family: "Kanit", sans-serif;
+  font-size: 15px;
+  font-weight: 600;
   text-decoration: none;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(56, 140, 182, 0.3);
 }
 
-.ff-addons-about__btn--primary {
-  padding: 16px;
-  background-color: #1b262a;
-  color: #fff;
+.about-btn:hover {
+  background-color: #ffffff;
+  color: #0b0b0b;
+  transform: translateY(-2px);
 }
 
-.ff-addons-about__btn--secondary {
-  padding: 14px 24px;
-  background-color: transparent;
-  color: #1b262a;
+.about-image-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
 }
 
-.ff-addons-about__btn:hover {
-  color: #00a7a9;
-  opacity: 0.7;
-  text-decoration: none;
+.image-frame {
+  position: relative;
+  max-width: 500px;
+  width: 100%;
+  border-radius: 16px;
 }
 
-.ff-addons-about__btn:focus {
-  opacity: 1;
-  outline: 3px solid #4aeda8;
+.image-frame::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  right: -12px;
+  width: 100%;
+  height: 100%;
+  border: 2px solid #388cb6;
+  border-radius: 16px;
+  z-index: 1;
 }
 
-.ff-addons-about__btn--primary:hover:focus {
-  opacity: 1;
-  background: #fff;
-  color: #1b262a;
-  border: 1px solid #fff;
-  outline: none;
+.image-frame img,
+.image-frame .about-image-placeholder {
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+  display: block;
+  position: relative;
+  z-index: 2;
+  object-fit: cover;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.ff-addons-about__btn--secondary:hover:focus {
-  opacity: 1;
-  background: transparent;
-  color: #fff;
-  border: 1px solid #fff;
-  outline: none;
+.image-frame .about-image-placeholder {
+  aspect-ratio: 4 / 5;
+  min-height: 320px;
+  background: #e8ecee;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+.exp-badge {
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  background-color: #388cb6;
+  color: #ffffff;
+  padding: 15px 22px;
+  border-radius: 12px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.exp-number {
+  font-family: "Kanit", sans-serif;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.exp-text {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 4px;
+  text-align: center;
 }
