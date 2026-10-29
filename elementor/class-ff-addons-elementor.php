@@ -63,6 +63,7 @@ class FF_Addons_Elementor
         require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-cta.php';
         require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-categories.php';
         require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-about.php';
+        require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-instagram.php';
 
         $widgets = [
             new FF_Addons_Widget_Menu(),
@@ -70,6 +71,7 @@ class FF_Addons_Elementor
             new FF_Addons_Widget_Cta(),
             new FF_Addons_Widget_Categories(),
             new FF_Addons_Widget_About(),
+            new FF_Addons_Widget_Instagram(),
         ];
 
         foreach ($widgets as $widget) {

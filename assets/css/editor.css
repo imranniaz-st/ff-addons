@@ -2,6 +2,7 @@
 .elementor-editor-active .ff-addons-grid,
 .elementor-editor-active .ff-addons-categories,
 .elementor-editor-active .ff-addons-cta,
-.elementor-editor-active .about-section-wrapper {
+.elementor-editor-active .about-section-wrapper,
+.elementor-editor-active .instagram-section-wrapper {
   min-height: 48px;
 }

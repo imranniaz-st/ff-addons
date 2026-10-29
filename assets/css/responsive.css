@@ -93,3 +93,40 @@
     font-size: 10px;
   }
 }
+
+/* Instagram — curated gallery */
+@media (max-width: 900px) {
+  .instagram-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .instagram-title {
+    font-size: 32px;
+    line-height: 40px;
+  }
+}
+
+@media (max-width: 560px) {
+  .instagram-section-wrapper {
+    padding: 50px 15px;
+  }
+
+  .instagram-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .instagram-title {
+    font-size: 26px;
+    line-height: 34px;
+  }
+
+  .instagram-header {
+    margin-bottom: 28px;
+  }
+
+  .instagram-btn {
+    padding: 12px 24px;
+    font-size: 14px;
+  }
+}

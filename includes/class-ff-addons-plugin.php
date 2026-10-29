@@ -44,6 +44,7 @@ class FF_Addons_Plugin
         add_shortcode('ff_addons_cta', [$this, 'shortcode_cta']);
         add_shortcode('ff_addons_categories', [$this, 'shortcode_categories']);
         add_shortcode('ff_addons_about', [$this, 'shortcode_about']);
+        add_shortcode('ff_addons_instagram', [$this, 'shortcode_instagram']);
 
         // Elementor may fire elementor/loaded before this plugin hooks it
         // (plugin load order). Boot immediately if already loaded.
@@ -68,7 +69,8 @@ class FF_Addons_Plugin
 
     public function register_assets(): void
     {
-        $base = FF_ADDONS_URL . 'assets/css/';
+        $css = FF_ADDONS_URL . 'assets/css/';
+        $js = FF_ADDONS_URL . 'assets/js/';
         $ver = FF_ADDONS_VERSION;
 
         wp_register_style(
@@ -77,14 +79,17 @@ class FF_Addons_Plugin
             [],
             null
         );
-        wp_register_style('ff-addons-base', $base . 'base.css', [], $ver);
-        wp_register_style('ff-addons-deals', $base . 'deals.css', ['ff-addons-base'], $ver);
-        wp_register_style('ff-addons-categories', $base . 'categories.css', ['ff-addons-base'], $ver);
-        wp_register_style('ff-addons-cta', $base . 'cta.css', ['ff-addons-base'], $ver);
-        wp_register_style('ff-addons-about', $base . 'about.css', ['ff-addons-base', 'ff-addons-fonts-about'], $ver);
+        wp_register_style('ff-addons-base', $css . 'base.css', [], $ver);
+        wp_register_style('ff-addons-deals', $css . 'deals.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-categories', $css . 'categories.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-cta', $css . 'cta.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-about', $css . 'about.css', ['ff-addons-base', 'ff-addons-fonts-about'], $ver);
+        wp_register_style('ff-addons-instagram', $css . 'instagram.css', ['ff-addons-base', 'ff-addons-fonts-about'], $ver);
         // Enqueued after component handles so breakpoint rules win.
-        wp_register_style('ff-addons-responsive', $base . 'responsive.css', ['ff-addons-base'], $ver);
-        wp_register_style('ff-addons-editor', $base . 'editor.css', [], $ver);
+        wp_register_style('ff-addons-responsive', $css . 'responsive.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-editor', $css . 'editor.css', [], $ver);
+
+        wp_register_script('ff-addons-instagram', $js . 'instagram.js', [], $ver, true);
     }
 
     /** Elementor editor / preview: load all component styles. */
@@ -97,8 +102,10 @@ class FF_Addons_Plugin
         wp_enqueue_style('ff-addons-categories');
         wp_enqueue_style('ff-addons-cta');
         wp_enqueue_style('ff-addons-about');
+        wp_enqueue_style('ff-addons-instagram');
         wp_enqueue_style('ff-addons-responsive');
         wp_enqueue_style('ff-addons-editor');
+        wp_enqueue_script('ff-addons-instagram');
     }
 
     /** @param list<string> $handles */
@@ -230,6 +237,33 @@ class FF_Addons_Plugin
             'badge_text' => (string) $atts['badge_text'],
             'image' => (string) $atts['image'],
             'image_alt' => (string) $atts['image_alt'],
+        ]);
+    }
+
+    /**
+     * @param  array<string, string>|string  $atts
+     */
+    public function shortcode_instagram($atts = []): string
+    {
+        $atts = shortcode_atts([
+            'subtitle' => __('FOLLOW US', 'ff-addons'),
+            'title' => __('Catch The Flavor On Instagram', 'ff-addons'),
+            'handle' => '@facefood_pwd_',
+            'profile_url' => 'https://www.instagram.com/facefood_pwd_/',
+            'columns' => '4',
+            'button_text' => __('Follow on Instagram', 'ff-addons'),
+        ], $atts, 'ff_addons_instagram');
+
+        return $this->render_instagram([
+            'subtitle' => (string) $atts['subtitle'],
+            'title' => (string) $atts['title'],
+            'handle' => (string) $atts['handle'],
+            'profile_url' => (string) $atts['profile_url'],
+            'profile_external' => true,
+            'profile_nofollow' => true,
+            'items' => [],
+            'columns' => (int) $atts['columns'],
+            'button_text' => (string) $atts['button_text'],
         ]);
     }
 
@@ -465,6 +499,131 @@ class FF_Addons_Plugin
                         <?php endif; ?>
                     </div>
                 </div>
+            </div>
+        </div>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * Curated Instagram-style gallery — Media Library images only (no scrape / API).
+     *
+     * @param  array<string, mixed>  $args
+     */
+    public function render_instagram(array $args = []): string
+    {
+        $this->enqueue_styles(['ff-addons-instagram']);
+        wp_enqueue_script('ff-addons-instagram');
+
+        $subtitle = (string) ($args['subtitle'] ?? '');
+        $title = (string) ($args['title'] ?? '');
+        $handle = (string) ($args['handle'] ?? '');
+        $profileUrl = (string) ($args['profile_url'] ?? 'https://www.instagram.com/facefood_pwd_/');
+        $profileExternal = (bool) ($args['profile_external'] ?? true);
+        $profileNofollow = (bool) ($args['profile_nofollow'] ?? true);
+        $buttonText = (string) ($args['button_text'] ?? '');
+        $columns = max(2, min(6, (int) ($args['columns'] ?? 4)));
+        $items = $args['items'] ?? [];
+        if (! is_array($items)) {
+            $items = [];
+        }
+
+        $igIcon = '<svg class="instagram-btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 3.691a6.146 6.146 0 1 0 0 12.292 6.146 6.146 0 0 0 0-12.292zm0 10.146a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>';
+        $igIconSmall = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0 3.691a6.146 6.146 0 1 0 0 12.292 6.146 6.146 0 0 0 0-12.292zm0 10.146a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>';
+
+        $profileAttrs = '';
+        if ($profileExternal) {
+            $profileAttrs .= ' target="_blank" rel="noopener';
+            if ($profileNofollow) {
+                $profileAttrs .= ' nofollow';
+            }
+            $profileAttrs .= '"';
+        } elseif ($profileNofollow) {
+            $profileAttrs .= ' rel="nofollow"';
+        }
+
+        ob_start();
+        ?>
+        <div class="instagram-section-wrapper">
+            <div class="instagram-container">
+                <div class="instagram-header">
+                    <?php if ($subtitle !== '') : ?>
+                        <span class="instagram-subtitle"><?php echo esc_html($subtitle); ?></span>
+                    <?php endif; ?>
+                    <?php if ($title !== '') : ?>
+                        <h2 class="instagram-title"><?php echo esc_html($title); ?></h2>
+                    <?php endif; ?>
+                    <?php if ($handle !== '' && $profileUrl !== '') : ?>
+                        <a class="instagram-handle" href="<?php echo esc_url($profileUrl); ?>"<?php echo $profileAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+                            <span class="instagram-handle__icon"><?php echo $igIconSmall; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                            <?php echo esc_html($handle); ?>
+                        </a>
+                    <?php elseif ($handle !== '') : ?>
+                        <span class="instagram-handle">
+                            <span class="instagram-handle__icon"><?php echo $igIconSmall; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                            <?php echo esc_html($handle); ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($items === []) : ?>
+                    <?php if (FF_Addons_Helpers::is_elementor_edit()) : ?>
+                        <p class="instagram-empty"><?php echo esc_html__('Add gallery items in the widget settings — pick images from the Media Library.', 'ff-addons'); ?></p>
+                    <?php endif; ?>
+                <?php else : ?>
+                    <div class="instagram-grid" style="--ff-cols:<?php echo esc_attr((string) $columns); ?>">
+                        <?php foreach ($items as $item) :
+                            if (! is_array($item)) {
+                                continue;
+                            }
+                            $image = (string) ($item['image'] ?? '');
+                            if ($image === '') {
+                                continue;
+                            }
+                            $caption = (string) ($item['caption'] ?? '');
+                            $link = (string) ($item['link'] ?? '');
+                            $alt = $caption !== '' ? $caption : $title;
+                            $label = $caption !== ''
+                                ? sprintf(
+                                    /* translators: %s: image caption */
+                                    __('Enlarge image: %s', 'ff-addons'),
+                                    $caption
+                                )
+                                : __('Enlarge image', 'ff-addons');
+                            ?>
+                            <button
+                                type="button"
+                                class="instagram-item"
+                                data-instagram-src="<?php echo esc_url($image); ?>"
+                                data-instagram-caption="<?php echo esc_attr($caption); ?>"
+                                <?php if ($link !== '') : ?>
+                                    data-instagram-link="<?php echo esc_url($link); ?>"
+                                <?php endif; ?>
+                                aria-label="<?php echo esc_attr($label); ?>"
+                            >
+                                <img src="<?php echo esc_url($image); ?>" alt="<?php echo esc_attr($alt); ?>" loading="lazy">
+                                <span class="instagram-item__badge" aria-hidden="true"><?php echo $igIconSmall; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
+                                <?php if ($caption !== '') : ?>
+                                    <span class="instagram-item__overlay">
+                                        <span class="instagram-item__caption"><?php echo esc_html($caption); ?></span>
+                                    </span>
+                                <?php else : ?>
+                                    <span class="instagram-item__overlay" aria-hidden="true"></span>
+                                <?php endif; ?>
+                            </button>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($buttonText !== '' && $profileUrl !== '') : ?>
+                    <div class="instagram-footer">
+                        <a class="instagram-btn" href="<?php echo esc_url($profileUrl); ?>"<?php echo $profileAttrs; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+                            <?php echo $igIcon; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+                            <?php echo esc_html($buttonText); ?>
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         <?php
