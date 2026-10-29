@@ -11,10 +11,19 @@ class FF_Addons_Api
 {
     private string $baseUrl;
 
+    private bool $bypassCache = false;
+
     public function __construct(?string $baseUrl = null)
     {
         $configured = $baseUrl ?? (string) get_option('ff_addons_api_base_url', 'https://app.facefood.cafe/api');
         $this->baseUrl = untrailingslashit($configured);
+    }
+
+    public function bypass_cache(bool $bypass = true): self
+    {
+        $this->bypassCache = $bypass;
+
+        return $this;
     }
 
     public function get_products(array $query = []): array|WP_Error
@@ -48,9 +57,11 @@ class FF_Addons_Api
         }
 
         $cacheKey = 'ff_addons_' . md5($url);
-        $cached = get_transient($cacheKey);
-        if (is_array($cached)) {
-            return $cached;
+        if (! $this->bypassCache) {
+            $cached = get_transient($cacheKey);
+            if (is_array($cached)) {
+                return $cached;
+            }
         }
 
         $response = wp_remote_get($url, [

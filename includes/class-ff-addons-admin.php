@@ -93,6 +93,14 @@ class FF_Addons_Admin
                     — <?php echo esc_html($probe->get_error_message()); ?></p>
             <?php endif; ?>
 
+            <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>
+            <ul>
+                <li><strong>FF Categories</strong> — <?php echo esc_html__('all menu categories (Shawarma, Burgers, …)', 'ff-addons'); ?></li>
+                <li><strong>FF Menu</strong> — <?php echo esc_html__('products with category dropdown', 'ff-addons'); ?></li>
+                <li><strong>FF Deals</strong> / <strong>FF CTA</strong></li>
+            </ul>
+            <p><?php echo esc_html__('In Elementor: search “FF” in the widget panel, or open category “FF Addons”. Style tab controls colors, typography, and spacing.', 'ff-addons'); ?></p>
+
             <p>
                 <a href="<?php echo esc_url(FF_ADDONS_URL . 'docs/API.md'); ?>" target="_blank" rel="noopener noreferrer">
                     <?php echo esc_html__('Open API documentation', 'ff-addons'); ?>

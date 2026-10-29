@@ -20,11 +20,25 @@ This plugin is a **separate** project from:
 3. **Settings → FF Addons** — confirm API base URL
 4. Drag widgets in Elementor / WPBakery, or use shortcodes
 
+## Elementor (easy edit)
+
+Panel category **FF Addons**:
+
+| Widget | Notes |
+|--------|--------|
+| **FF Categories** | All Facefood categories from the API (multi-select, grid or bar) |
+| **FF Menu** | Products — **Category** SELECT2 with every menu category |
+| **FF Deals** | Deals grid + Style tab |
+| **FF CTA** | Editable title/text/button + Style tab |
+
+Styles (colors, typography, radius, gap) are on each widget’s **Style** tab. CSS loads in the Elementor editor/preview.
+
 ## Shortcodes
 
 | Shortcode | Purpose |
 |-----------|---------|
-| `[ff_addons_menu]` | Product grid |
+| `[ff_addons_categories]` | Category grid / bar |
+| `[ff_addons_menu category="burgers"]` | Product grid |
 | `[ff_addons_deals]` | Deals grid |
 | `[ff_addons_cta]` | Call-to-action banner |
 

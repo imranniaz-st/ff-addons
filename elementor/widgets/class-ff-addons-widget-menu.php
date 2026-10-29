@@ -4,7 +4,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-class FF_Addons_Widget_Menu extends \Elementor\Widget_Base
+class FF_Addons_Widget_Menu extends FF_Addons_Widget_Base
 {
     public function get_name(): string
     {
@@ -21,20 +21,24 @@ class FF_Addons_Widget_Menu extends \Elementor\Widget_Base
         return 'eicon-products';
     }
 
-    public function get_categories(): array
-    {
-        return ['ff-addons'];
-    }
-
     public function get_keywords(): array
     {
-        return ['facefood', 'menu', 'products', 'food'];
+        return ['facefood', 'menu', 'products', 'food', 'category'];
     }
 
     protected function register_controls(): void
     {
         $this->start_controls_section('content', [
             'label' => __('Content', 'ff-addons'),
+        ]);
+
+        $this->add_control('category', [
+            'label' => __('Category', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::SELECT2,
+            'options' => FF_Addons_Helpers::category_options(true),
+            'default' => '',
+            'label_block' => true,
+            'description' => __('All Facefood menu categories from the API.', 'ff-addons'),
         ]);
 
         $this->add_control('limit', [
@@ -45,35 +49,31 @@ class FF_Addons_Widget_Menu extends \Elementor\Widget_Base
             'max' => 48,
         ]);
 
-        $this->add_control('category', [
-            'label' => __('Category slug (optional)', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => '',
-        ]);
+        $this->add_columns_control('4');
 
-        $this->add_control('columns', [
-            'label' => __('Columns', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::SELECT,
-            'default' => '4',
-            'options' => [
-                '2' => '2',
-                '3' => '3',
-                '4' => '4',
-                '5' => '5',
-                '6' => '6',
-            ],
+        $this->add_control('show_description', [
+            'label' => __('Show description', 'ff-addons'),
+            'type' => \Elementor\Controls_Manager::SWITCHER,
+            'label_on' => __('Yes', 'ff-addons'),
+            'label_off' => __('No', 'ff-addons'),
+            'return_value' => 'yes',
+            'default' => 'yes',
         ]);
 
         $this->end_controls_section();
+
+        $this->add_card_style_section();
     }
 
     protected function render(): void
     {
         $s = $this->get_settings_for_display();
-        echo FF_Addons_Plugin::instance()->render_menu(
-            (int) ($s['limit'] ?? 8),
-            (string) ($s['category'] ?? ''),
-            (int) ($s['columns'] ?? 4)
-        );
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped inside renderer
+        echo FF_Addons_Plugin::instance()->render_menu([
+            'limit' => (int) ($s['limit'] ?? 8),
+            'category' => (string) ($s['category'] ?? ''),
+            'columns' => (int) ($s['columns'] ?? 4),
+            'show_description' => ($s['show_description'] ?? 'yes') === 'yes',
+        ]);
     }
 }

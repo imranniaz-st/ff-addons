@@ -4,7 +4,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-class FF_Addons_Widget_Deals extends \Elementor\Widget_Base
+class FF_Addons_Widget_Deals extends FF_Addons_Widget_Base
 {
     public function get_name(): string
     {
@@ -19,11 +19,6 @@ class FF_Addons_Widget_Deals extends \Elementor\Widget_Base
     public function get_icon(): string
     {
         return 'eicon-price-table';
-    }
-
-    public function get_categories(): array
-    {
-        return ['ff-addons'];
     }
 
     public function get_keywords(): array
@@ -45,26 +40,20 @@ class FF_Addons_Widget_Deals extends \Elementor\Widget_Base
             'max' => 24,
         ]);
 
-        $this->add_control('columns', [
-            'label' => __('Columns', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::SELECT,
-            'default' => '3',
-            'options' => [
-                '2' => '2',
-                '3' => '3',
-                '4' => '4',
-            ],
-        ]);
+        $this->add_columns_control('3');
 
         $this->end_controls_section();
+
+        $this->add_card_style_section();
     }
 
     protected function render(): void
     {
         $s = $this->get_settings_for_display();
-        echo FF_Addons_Plugin::instance()->render_deals(
-            (int) ($s['limit'] ?? 6),
-            (int) ($s['columns'] ?? 3)
-        );
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        echo FF_Addons_Plugin::instance()->render_deals([
+            'limit' => (int) ($s['limit'] ?? 6),
+            'columns' => (int) ($s['columns'] ?? 3),
+        ]);
     }
 }

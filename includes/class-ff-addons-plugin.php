@@ -35,9 +35,13 @@ class FF_Addons_Plugin
         }
 
         add_action('wp_enqueue_scripts', [$this, 'enqueue_assets']);
+        add_action('elementor/preview/enqueue_styles', [$this, 'enqueue_assets']);
+        add_action('elementor/editor/after_enqueue_styles', [$this, 'enqueue_assets']);
+
         add_shortcode('ff_addons_menu', [$this, 'shortcode_menu']);
         add_shortcode('ff_addons_deals', [$this, 'shortcode_deals']);
         add_shortcode('ff_addons_cta', [$this, 'shortcode_cta']);
+        add_shortcode('ff_addons_categories', [$this, 'shortcode_categories']);
 
         add_action('elementor/loaded', static function (): void {
             require_once FF_ADDONS_DIR . 'elementor/class-ff-addons-elementor.php';
@@ -70,9 +74,15 @@ class FF_Addons_Plugin
             'limit' => '8',
             'category' => '',
             'columns' => '4',
+            'show_description' => 'yes',
         ], $atts, 'ff_addons_menu');
 
-        return $this->render_menu((int) $atts['limit'], (string) $atts['category'], (int) $atts['columns']);
+        return $this->render_menu([
+            'limit' => (int) $atts['limit'],
+            'category' => (string) $atts['category'],
+            'columns' => (int) $atts['columns'],
+            'show_description' => $atts['show_description'] !== 'no',
+        ]);
     }
 
     /**
@@ -85,7 +95,10 @@ class FF_Addons_Plugin
             'columns' => '3',
         ], $atts, 'ff_addons_deals');
 
-        return $this->render_deals((int) $atts['limit'], (int) $atts['columns']);
+        return $this->render_deals([
+            'limit' => (int) $atts['limit'],
+            'columns' => (int) $atts['columns'],
+        ]);
     }
 
     /**
@@ -100,56 +113,89 @@ class FF_Addons_Plugin
             'url' => home_url('/'),
         ], $atts, 'ff_addons_cta');
 
-        return $this->render_cta(
-            (string) $atts['title'],
-            (string) $atts['text'],
-            (string) $atts['button'],
-            (string) $atts['url']
-        );
+        return $this->render_cta([
+            'title' => (string) $atts['title'],
+            'text' => (string) $atts['text'],
+            'button' => (string) $atts['button'],
+            'url' => (string) $atts['url'],
+        ]);
     }
 
-    public function render_menu(int $limit = 8, string $category = '', int $columns = 4): string
+    /**
+     * @param  array<string, string>|string  $atts
+     */
+    public function shortcode_categories($atts = []): string
     {
+        $atts = shortcode_atts([
+            'layout' => 'grid',
+            'columns' => '6',
+            'link_base' => '',
+            'show_count' => 'yes',
+            'categories' => '',
+        ], $atts, 'ff_addons_categories');
+
+        return $this->render_categories([
+            'layout' => (string) $atts['layout'],
+            'columns' => (int) $atts['columns'],
+            'link_base' => (string) $atts['link_base'],
+            'show_count' => $atts['show_count'] !== 'no',
+            'categories' => (string) $atts['categories'],
+        ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $args
+     */
+    public function render_menu(array $args = []): string
+    {
+        $limit = max(1, min(48, (int) ($args['limit'] ?? 8)));
+        $category = (string) ($args['category'] ?? '');
+        $columns = max(1, min(6, (int) ($args['columns'] ?? 4)));
+        $showDescription = (bool) ($args['show_description'] ?? true);
+
         $api = new FF_Addons_Api();
-        $query = ['per_page' => max(1, min(48, $limit))];
+        if (FF_Addons_Helpers::is_elementor_edit()) {
+            $api->bypass_cache(true);
+        }
+
+        $query = ['per_page' => $limit];
         if ($category !== '') {
             $query['category'] = $category;
         }
 
         $response = $api->get_products($query);
         if (is_wp_error($response)) {
-            return '<p class="ff-addons-error">' . esc_html($response->get_error_message()) . '</p>';
+            return $this->render_error($response->get_error_message());
         }
 
-        $items = $response['data'] ?? $response;
-        if (! is_array($items)) {
-            $items = [];
+        $items = FF_Addons_Helpers::extract_list($response);
+        if ($items === []) {
+            return '<p class="ff-addons-empty">' . esc_html__('No products found.', 'ff-addons') . '</p>';
         }
-
-        $currency = (string) get_option('ff_addons_currency', 'Rs.');
-        $columns = max(1, min(6, $columns));
 
         ob_start();
         echo '<div class="ff-addons-grid ff-addons-menu" style="--ff-cols:' . esc_attr((string) $columns) . '">';
         foreach ($items as $product) {
-            if (! is_array($product)) {
-                continue;
-            }
             $name = (string) ($product['name'] ?? '');
             $price = $product['price'] ?? null;
             $image = (string) ($product['image_url'] ?? '');
             $desc = (string) ($product['description'] ?? '');
+            $catName = (string) (($product['category']['name'] ?? '') ?: '');
             echo '<article class="ff-addons-card">';
             if ($image !== '') {
                 echo '<div class="ff-addons-card__media"><img src="' . esc_url($image) . '" alt="' . esc_attr($name) . '" loading="lazy"></div>';
             }
             echo '<div class="ff-addons-card__body">';
+            if ($catName !== '') {
+                echo '<p class="ff-addons-card__meta">' . esc_html($catName) . '</p>';
+            }
             echo '<h3 class="ff-addons-card__title">' . esc_html($name) . '</h3>';
-            if ($desc !== '') {
+            if ($showDescription && $desc !== '') {
                 echo '<p class="ff-addons-card__text">' . esc_html(wp_trim_words($desc, 18)) . '</p>';
             }
-            if ($price !== null && $price !== '') {
-                echo '<p class="ff-addons-card__price">' . esc_html($currency . ' ' . number_format((float) $price, 0)) . '</p>';
+            $formatted = FF_Addons_Helpers::format_price($price);
+            if ($formatted !== '') {
+                echo '<p class="ff-addons-card__price">' . esc_html($formatted) . '</p>';
             }
             echo '</div></article>';
         }
@@ -158,28 +204,32 @@ class FF_Addons_Plugin
         return (string) ob_get_clean();
     }
 
-    public function render_deals(int $limit = 6, int $columns = 3): string
+    /**
+     * @param  array<string, mixed>  $args
+     */
+    public function render_deals(array $args = []): string
     {
+        $limit = max(1, min(24, (int) ($args['limit'] ?? 6)));
+        $columns = max(1, min(6, (int) ($args['columns'] ?? 3)));
+
         $api = new FF_Addons_Api();
-        $response = $api->get_deals(['per_page' => max(1, min(24, $limit))]);
+        if (FF_Addons_Helpers::is_elementor_edit()) {
+            $api->bypass_cache(true);
+        }
+
+        $response = $api->get_deals(['per_page' => $limit]);
         if (is_wp_error($response)) {
-            return '<p class="ff-addons-error">' . esc_html($response->get_error_message()) . '</p>';
+            return $this->render_error($response->get_error_message());
         }
 
-        $items = $response['data'] ?? $response;
-        if (! is_array($items)) {
-            $items = [];
+        $items = FF_Addons_Helpers::extract_list($response);
+        if ($items === []) {
+            return '<p class="ff-addons-empty">' . esc_html__('No deals found.', 'ff-addons') . '</p>';
         }
-
-        $currency = (string) get_option('ff_addons_currency', 'Rs.');
-        $columns = max(1, min(6, $columns));
 
         ob_start();
         echo '<div class="ff-addons-grid ff-addons-deals" style="--ff-cols:' . esc_attr((string) $columns) . '">';
         foreach ($items as $deal) {
-            if (! is_array($deal)) {
-                continue;
-            }
             $title = (string) ($deal['title'] ?? $deal['name'] ?? '');
             $price = $deal['deal_price'] ?? $deal['price'] ?? null;
             $image = (string) ($deal['image_url'] ?? '');
@@ -189,8 +239,9 @@ class FF_Addons_Plugin
             }
             echo '<div class="ff-addons-card__body">';
             echo '<h3 class="ff-addons-card__title">' . esc_html($title) . '</h3>';
-            if ($price !== null && $price !== '') {
-                echo '<p class="ff-addons-card__price">' . esc_html($currency . ' ' . number_format((float) $price, 0)) . '</p>';
+            $formatted = FF_Addons_Helpers::format_price($price);
+            if ($formatted !== '') {
+                echo '<p class="ff-addons-card__price">' . esc_html($formatted) . '</p>';
             }
             echo '</div></article>';
         }
@@ -199,19 +250,129 @@ class FF_Addons_Plugin
         return (string) ob_get_clean();
     }
 
-    public function render_cta(string $title, string $text, string $button, string $url): string
+    /**
+     * @param  array<string, mixed>  $args
+     */
+    public function render_cta(array $args = []): string
     {
+        $title = (string) ($args['title'] ?? __('Order Facefood', 'ff-addons'));
+        $text = (string) ($args['text'] ?? '');
+        $button = (string) ($args['button'] ?? __('Order now', 'ff-addons'));
+        $url = (string) ($args['url'] ?? home_url('/'));
+
         ob_start();
         ?>
         <section class="ff-addons-cta">
             <div class="ff-addons-cta__inner">
-                <h2 class="ff-addons-cta__title"><?php echo esc_html($title); ?></h2>
-                <p class="ff-addons-cta__text"><?php echo esc_html($text); ?></p>
-                <a class="ff-addons-cta__button" href="<?php echo esc_url($url); ?>"><?php echo esc_html($button); ?></a>
+                <?php if ($title !== '') : ?>
+                    <h2 class="ff-addons-cta__title"><?php echo esc_html($title); ?></h2>
+                <?php endif; ?>
+                <?php if ($text !== '') : ?>
+                    <p class="ff-addons-cta__text"><?php echo esc_html($text); ?></p>
+                <?php endif; ?>
+                <?php if ($button !== '' && $url !== '') : ?>
+                    <a class="ff-addons-cta__button" href="<?php echo esc_url($url); ?>"><?php echo esc_html($button); ?></a>
+                <?php endif; ?>
             </div>
         </section>
         <?php
 
         return (string) ob_get_clean();
+    }
+
+    /**
+     * @param  array<string, mixed>  $args
+     */
+    public function render_categories(array $args = []): string
+    {
+        $layout = (string) ($args['layout'] ?? 'grid');
+        $columns = max(2, min(8, (int) ($args['columns'] ?? 6)));
+        $linkBase = (string) ($args['link_base'] ?? '');
+        $showCount = (bool) ($args['show_count'] ?? true);
+        $selected = $args['categories'] ?? [];
+        if (is_string($selected) && $selected !== '') {
+            $selected = array_filter(array_map('trim', explode(',', $selected)));
+        }
+        if (! is_array($selected)) {
+            $selected = [];
+        }
+        $selected = array_values(array_filter(array_map('strval', $selected)));
+
+        $api = new FF_Addons_Api();
+        if (FF_Addons_Helpers::is_elementor_edit()) {
+            $api->bypass_cache(true);
+        }
+
+        $response = $api->get_categories();
+        if (is_wp_error($response)) {
+            return $this->render_error($response->get_error_message());
+        }
+
+        $items = FF_Addons_Helpers::extract_list($response);
+        if ($items === []) {
+            // Still show known Facefood categories so Elementor is editable offline.
+            foreach (FF_Addons_Helpers::fallback_categories() as $slug => $name) {
+                $items[] = [
+                    'slug' => $slug,
+                    'name' => $name,
+                    'image_url' => '',
+                    'products_count' => null,
+                ];
+            }
+        }
+
+        usort($items, static function (array $a, array $b): int {
+            return ((int) ($a['sort_order'] ?? 0)) <=> ((int) ($b['sort_order'] ?? 0));
+        });
+
+        if ($selected !== []) {
+            $items = array_values(array_filter(
+                $items,
+                static fn (array $cat): bool => in_array((string) ($cat['slug'] ?? ''), $selected, true)
+            ));
+        }
+
+        $mod = $layout === 'bar' ? 'ff-addons-categories--bar' : 'ff-addons-categories--grid';
+
+        ob_start();
+        echo '<div class="ff-addons-categories ' . esc_attr($mod) . '" style="--ff-cols:' . esc_attr((string) $columns) . '">';
+        foreach ($items as $cat) {
+            $slug = (string) ($cat['slug'] ?? '');
+            $name = (string) ($cat['name'] ?? $slug);
+            $image = (string) ($cat['image_url'] ?? '');
+            $count = $cat['products_count'] ?? null;
+            $href = $linkBase !== ''
+                ? trailingslashit($linkBase) . rawurlencode($slug)
+                : '#ff-cat-' . rawurlencode($slug);
+
+            echo '<a class="ff-addons-cat" href="' . esc_url($href) . '" data-category="' . esc_attr($slug) . '">';
+            if ($image !== '') {
+                echo '<span class="ff-addons-cat__media"><img src="' . esc_url($image) . '" alt="' . esc_attr($name) . '" loading="lazy"></span>';
+            } else {
+                echo '<span class="ff-addons-cat__media ff-addons-cat__media--placeholder" aria-hidden="true"></span>';
+            }
+            echo '<span class="ff-addons-cat__body">';
+            echo '<span class="ff-addons-cat__title">' . esc_html($name) . '</span>';
+            if ($showCount && $count !== null && $count !== '') {
+                echo '<span class="ff-addons-cat__count">' . esc_html(sprintf(
+                    /* translators: %d: product count */
+                    _n('%d item', '%d items', (int) $count, 'ff-addons'),
+                    (int) $count
+                )) . '</span>';
+            }
+            echo '</span></a>';
+        }
+        echo '</div>';
+
+        return (string) ob_get_clean();
+    }
+
+    private function render_error(string $message): string
+    {
+        $hint = FF_Addons_Helpers::is_elementor_edit()
+            ? ' ' . __('Check Settings → FF Addons API URL.', 'ff-addons')
+            : '';
+
+        return '<p class="ff-addons-error">' . esc_html($message . $hint) . '</p>';
     }
 }
