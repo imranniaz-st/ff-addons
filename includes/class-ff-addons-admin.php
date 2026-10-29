@@ -114,11 +114,11 @@ class FF_Addons_Admin
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>
             <ul>
-                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF CTA</li>
+                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF About Us, FF CTA</li>
                 <li><strong><?php echo esc_html__('FF Addons · Menu', 'ff-addons'); ?></strong> — FF Categories, FF Menu</li>
                 <li><strong><?php echo esc_html__('FF Addons · Offers', 'ff-addons'); ?></strong> — FF Deals</li>
             </ul>
-            <p><?php echo esc_html__('In Elementor: search “FF”, or open FF Addons / General / Menu / Offers. Widgets also appear under Elementor General. Style tab controls colors, typography, and spacing.', 'ff-addons'); ?></p>
+            <p><?php echo esc_html__('In Elementor’s widgets panel: search “About Us” or “FF”, or open FF Addons / FF Addons · General. Widgets also appear under Elementor General. Drag onto the canvas — no shortcode needed. Style tab controls colors, typography, and spacing.', 'ff-addons'); ?></p>
 
             <p>
                 <a href="<?php echo esc_url(FF_ADDONS_URL . 'docs/API.md'); ?>" target="_blank" rel="noopener noreferrer">

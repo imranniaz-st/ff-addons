@@ -23,7 +23,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
 
     public function get_keywords(): array
     {
-        return ['facefood', 'about', 'about us', 'ff addons', 'general'];
+        return ['about', 'about us', 'aboutus', 'team', 'story', 'ff', 'ff about', 'ff addons', 'general'];
     }
 
     protected function ff_addon_categories(): array
@@ -53,14 +53,14 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
         $this->add_control('description', [
             'label' => __('Description', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::WYSIWYG,
-            'default' => '<p>' . esc_html__('Drip Hydration brings IV therapy and medical care directly to you, in the comfort of your home. With providers in 100+ cities worldwide, our goal is simple: make getting quality care convenient, comfortable, and personal.', 'ff-addons') . '</p><p>' . esc_html__('Our nurses are a big part of what makes the experience different. Many come from emergency rooms, ICUs, labor and delivery, and other fast-paced clinical settings where starting IVs and caring for patients is part of their everyday work.', 'ff-addons') . '</p>',
+            'default' => '<p>' . esc_html__('Add a short introduction about your business, team, or story.', 'ff-addons') . '</p>',
         ]);
 
         $this->add_control('image', [
             'label' => __('Image', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::MEDIA,
             'default' => [
-                'url' => 'https://driphydration.com/wp-content/uploads/2025/05/Our-Nurses.png',
+                'url' => '',
             ],
         ]);
 
@@ -74,7 +74,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
         $this->add_control('primary_button', [
             'label' => __('Primary button label', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('BOOK IV THERAPY', 'ff-addons'),
+            'default' => __('Learn more', 'ff-addons'),
             'dynamic' => ['active' => true],
         ]);
 
@@ -82,7 +82,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'label' => __('Primary button URL', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::URL,
             'default' => [
-                'url' => 'https://driphydration.com/iv-therapy/',
+                'url' => home_url('/'),
             ],
             'dynamic' => ['active' => true],
         ]);
@@ -90,7 +90,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
         $this->add_control('secondary_button', [
             'label' => __('Secondary button label', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('VIEW PLANS', 'ff-addons'),
+            'default' => __('Contact us', 'ff-addons'),
             'dynamic' => ['active' => true],
         ]);
 
@@ -98,7 +98,7 @@ class FF_Addons_Widget_About extends FF_Addons_Widget_Base
             'label' => __('Secondary button URL', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::URL,
             'default' => [
-                'url' => 'https://driphydration.com/vitamin-drip-membership/',
+                'url' => home_url('/'),
             ],
             'dynamic' => ['active' => true],
         ]);

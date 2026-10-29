@@ -45,10 +45,20 @@ class FF_Addons_Plugin
         add_shortcode('ff_addons_categories', [$this, 'shortcode_categories']);
         add_shortcode('ff_addons_about', [$this, 'shortcode_about']);
 
-        add_action('elementor/loaded', static function (): void {
+        // Elementor may fire elementor/loaded before this plugin hooks it
+        // (plugin load order). Boot immediately if already loaded.
+        $boot_elementor = static function (): void {
+            if (! class_exists('\\Elementor\\Plugin')) {
+                return;
+            }
             require_once FF_ADDONS_DIR . 'elementor/class-ff-addons-elementor.php';
             new FF_Addons_Elementor();
-        });
+        };
+        if (did_action('elementor/loaded')) {
+            $boot_elementor();
+        } else {
+            add_action('elementor/loaded', $boot_elementor);
+        }
 
         add_action('vc_before_init', static function (): void {
             require_once FF_ADDONS_DIR . 'wpbakery/class-ff-addons-wpbakery.php';
@@ -136,10 +146,10 @@ class FF_Addons_Plugin
     public function shortcode_cta($atts = []): string
     {
         $atts = shortcode_atts([
-            'title' => __('Order Facefood', 'ff-addons'),
-            'text' => __('Fresh meals delivered fast. Open the app or shop online.', 'ff-addons'),
-            'button' => __('Order now', 'ff-addons'),
-            'url' => home_url('/'),
+            'title' => __('Get Started', 'ff-addons'),
+            'text' => __('Add a short call-to-action message here.', 'ff-addons'),
+            'button' => __('Learn More', 'ff-addons'),
+            'url' => '#',
         ], $atts, 'ff_addons_cta');
 
         return $this->render_cta([
@@ -180,12 +190,12 @@ class FF_Addons_Plugin
         $atts = shortcode_atts([
             'title' => __('About Us', 'ff-addons'),
             'description' => '',
-            'image' => 'https://driphydration.com/wp-content/uploads/2025/05/Our-Nurses.png',
+            'image' => '',
             'image_alt' => __('About Us', 'ff-addons'),
-            'primary_button' => __('BOOK IV THERAPY', 'ff-addons'),
-            'primary_url' => 'https://driphydration.com/iv-therapy/',
-            'secondary_button' => __('VIEW PLANS', 'ff-addons'),
-            'secondary_url' => 'https://driphydration.com/vitamin-drip-membership/',
+            'primary_button' => __('Learn more', 'ff-addons'),
+            'primary_url' => home_url('/'),
+            'secondary_button' => __('Contact us', 'ff-addons'),
+            'secondary_url' => home_url('/'),
         ], $atts, 'ff_addons_about');
 
         $description = (string) $atts['description'];
@@ -323,10 +333,10 @@ class FF_Addons_Plugin
     {
         $this->enqueue_styles(['ff-addons-cta']);
 
-        $title = (string) ($args['title'] ?? __('Order Facefood', 'ff-addons'));
+        $title = (string) ($args['title'] ?? __('Get Started', 'ff-addons'));
         $text = (string) ($args['text'] ?? '');
-        $button = (string) ($args['button'] ?? __('Order now', 'ff-addons'));
-        $url = (string) ($args['url'] ?? home_url('/'));
+        $button = (string) ($args['button'] ?? __('Learn More', 'ff-addons'));
+        $url = (string) ($args['url'] ?? '#');
 
         ob_start();
         ?>
@@ -357,15 +367,12 @@ class FF_Addons_Plugin
 
         $title = (string) ($args['title'] ?? __('About Us', 'ff-addons'));
         $description = (string) ($args['description'] ?? '');
-        if ($description === '') {
-            $description = '<p>' . esc_html__('Drip Hydration brings IV therapy and medical care directly to you, in the comfort of your home. With providers in 100+ cities worldwide, our goal is simple: make getting quality care convenient, comfortable, and personal.', 'ff-addons') . '</p><p>' . esc_html__('Our nurses are a big part of what makes the experience different. Many come from emergency rooms, ICUs, labor and delivery, and other fast-paced clinical settings where starting IVs and caring for patients is part of their everyday work.', 'ff-addons') . '</p>';
-        }
-        $image = (string) ($args['image'] ?? 'https://driphydration.com/wp-content/uploads/2025/05/Our-Nurses.png');
+        $image = (string) ($args['image'] ?? '');
         $imageAlt = (string) ($args['image_alt'] ?? $title);
-        $primaryButton = (string) ($args['primary_button'] ?? __('BOOK IV THERAPY', 'ff-addons'));
-        $primaryUrl = (string) ($args['primary_url'] ?? 'https://driphydration.com/iv-therapy/');
-        $secondaryButton = (string) ($args['secondary_button'] ?? __('VIEW PLANS', 'ff-addons'));
-        $secondaryUrl = (string) ($args['secondary_url'] ?? 'https://driphydration.com/vitamin-drip-membership/');
+        $primaryButton = (string) ($args['primary_button'] ?? __('Learn more', 'ff-addons'));
+        $primaryUrl = (string) ($args['primary_url'] ?? home_url('/'));
+        $secondaryButton = (string) ($args['secondary_button'] ?? __('Contact us', 'ff-addons'));
+        $secondaryUrl = (string) ($args['secondary_url'] ?? home_url('/'));
 
         ob_start();
         ?>

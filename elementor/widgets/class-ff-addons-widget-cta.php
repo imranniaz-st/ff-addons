@@ -45,7 +45,7 @@ class FF_Addons_Widget_Cta extends FF_Addons_Widget_Base
         $this->add_control('title', [
             'label' => __('Title', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('Order Facefood', 'ff-addons'),
+            'default' => __('Get Started', 'ff-addons'),
             'label_block' => true,
             'dynamic' => ['active' => true],
         ]);
@@ -53,14 +53,14 @@ class FF_Addons_Widget_Cta extends FF_Addons_Widget_Base
         $this->add_control('text', [
             'label' => __('Text', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXTAREA,
-            'default' => __('Fresh meals delivered fast. Open the app or shop online.', 'ff-addons'),
+            'default' => __('Add a short call-to-action message here.', 'ff-addons'),
             'dynamic' => ['active' => true],
         ]);
 
         $this->add_control('button', [
             'label' => __('Button label', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::TEXT,
-            'default' => __('Order now', 'ff-addons'),
+            'default' => __('Learn More', 'ff-addons'),
             'dynamic' => ['active' => true],
         ]);
 
@@ -68,7 +68,7 @@ class FF_Addons_Widget_Cta extends FF_Addons_Widget_Base
             'label' => __('Button URL', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::URL,
             'default' => [
-                'url' => home_url('/'),
+                'url' => '#',
             ],
             'dynamic' => ['active' => true],
         ]);
@@ -136,7 +136,7 @@ class FF_Addons_Widget_Cta extends FF_Addons_Widget_Base
     protected function render(): void
     {
         $s = $this->get_settings_for_display();
-        $url = is_array($s['url'] ?? null) ? (string) ($s['url']['url'] ?? home_url('/')) : home_url('/');
+        $url = is_array($s['url'] ?? null) ? (string) ($s['url']['url'] ?? '#') : '#';
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo FF_Addons_Plugin::instance()->render_cta([
             'title' => (string) ($s['title'] ?? ''),

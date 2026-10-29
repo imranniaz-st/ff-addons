@@ -6,13 +6,20 @@ if (! defined('ABSPATH')) {
 
 class FF_Addons_Elementor
 {
+    private static bool $booted = false;
     private static bool $registered = false;
 
     public function __construct()
     {
+        if (self::$booted) {
+            return;
+        }
+        self::$booted = true;
+
         add_action('elementor/elements/categories_registered', [$this, 'register_category'], 5);
+        // Elementor 3.5+ (preferred).
         add_action('elementor/widgets/register', [$this, 'register_widgets']);
-        // Older Elementor hooks (still used on some Hostinger installs).
+        // Pre-3.5 / some hosts still fire this.
         add_action('elementor/widgets/widgets_registered', [$this, 'register_widgets']);
     }
 

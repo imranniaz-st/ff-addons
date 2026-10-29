@@ -91,7 +91,7 @@ class FF_Addons_Widget_Categories extends FF_Addons_Widget_Base
         $this->add_control('link_base', [
             'label' => __('Link base URL (optional)', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::URL,
-            'placeholder' => 'https://facefood.cafe/product-category/',
+            'placeholder' => 'https://example.com/category/',
             'description' => __('Category slug is appended. Leave empty for in-page anchors (#ff-cat-slug).', 'ff-addons'),
             'show_external' => false,
         ]);
