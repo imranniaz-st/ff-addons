@@ -55,12 +55,14 @@ class FF_Addons_Elementor
         require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-deals.php';
         require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-cta.php';
         require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-categories.php';
+        require_once FF_ADDONS_DIR . 'elementor/widgets/class-ff-addons-widget-about.php';
 
         $widgets = [
             new FF_Addons_Widget_Menu(),
             new FF_Addons_Widget_Deals(),
             new FF_Addons_Widget_Cta(),
             new FF_Addons_Widget_Categories(),
+            new FF_Addons_Widget_About(),
         ];
 
         foreach ($widgets as $widget) {

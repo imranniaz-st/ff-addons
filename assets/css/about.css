@@ -1,0 +1,142 @@
+.ff-addons-about {
+  position: relative;
+  display: flex;
+  color: #565656;
+  font-family: Poppins, "Segoe UI", sans-serif;
+  font-size: 17px;
+  font-weight: 300;
+  letter-spacing: 0.55px;
+  line-height: 28px;
+  min-height: 678px;
+  text-align: left;
+  height: 100%;
+}
+
+.ff-addons-about__picture {
+  display: block;
+}
+
+.ff-addons-about__image {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  max-width: 100%;
+  width: calc(50% - 10px);
+  height: 100%;
+  object-fit: cover;
+  object-position: 0% 50%;
+  user-select: none;
+}
+
+.ff-addons-about__container {
+  margin: 0 auto;
+  padding: 0 16px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  max-width: 1246px;
+  width: 100%;
+}
+
+.ff-addons-about__content {
+  display: flex;
+  flex-direction: column;
+  max-width: 506px;
+}
+
+.ff-addons-about__heading {
+  order: 1;
+}
+
+.ff-addons-about__title {
+  margin: 0 0 24px;
+  position: relative;
+  z-index: 1;
+  color: #1b262a;
+  font-size: 50px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 54px;
+  width: 100%;
+  height: auto;
+}
+
+.ff-addons-about__body {
+  order: 2;
+}
+
+.ff-addons-about__text {
+  margin: 0;
+}
+
+.ff-addons-about__text p {
+  margin: 0 0 1em;
+}
+
+.ff-addons-about__text p:last-child {
+  margin-bottom: 0;
+}
+
+.ff-addons-about__actions {
+  margin: 16px 0;
+  gap: 24px;
+  align-items: center;
+  display: flex;
+  order: 3;
+}
+
+.ff-addons-about__btn {
+  box-sizing: border-box;
+  border-radius: 40px;
+  border: 1px solid #1b262a;
+  cursor: pointer;
+  display: block;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 18px;
+  text-align: center;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.ff-addons-about__btn--primary {
+  padding: 16px;
+  background-color: #1b262a;
+  color: #fff;
+}
+
+.ff-addons-about__btn--secondary {
+  padding: 14px 24px;
+  background-color: transparent;
+  color: #1b262a;
+}
+
+.ff-addons-about__btn:hover {
+  color: #00a7a9;
+  opacity: 0.7;
+  text-decoration: none;
+}
+
+.ff-addons-about__btn:focus {
+  opacity: 1;
+  outline: 3px solid #4aeda8;
+}
+
+.ff-addons-about__btn--primary:hover:focus {
+  opacity: 1;
+  background: #fff;
+  color: #1b262a;
+  border: 1px solid #fff;
+  outline: none;
+}
+
+.ff-addons-about__btn--secondary:hover:focus {
+  opacity: 1;
+  background: transparent;
+  color: #fff;
+  border: 1px solid #fff;
+  outline: none;
+}

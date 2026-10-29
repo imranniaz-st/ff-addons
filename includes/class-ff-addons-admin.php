@@ -27,8 +27,8 @@ class FF_Addons_Admin
     {
         register_setting('ff_addons', 'ff_addons_api_base_url', [
             'type' => 'string',
-            'sanitize_callback' => 'esc_url_raw',
-            'default' => 'https://app.facefood.cafe/api',
+            'sanitize_callback' => [$this, 'sanitize_api_base_url'],
+            'default' => '',
         ]);
         register_setting('ff_addons', 'ff_addons_cache_ttl', [
             'type' => 'integer',
@@ -42,15 +42,30 @@ class FF_Addons_Admin
         ]);
     }
 
+    public function sanitize_api_base_url($value): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+        if ($value === '') {
+            return '';
+        }
+
+        return esc_url_raw($value);
+    }
+
     public function render_page(): void
     {
         if (! current_user_can('manage_options')) {
             return;
         }
 
+        $apiUrl = (string) get_option('ff_addons_api_base_url', '');
         $api = new FF_Addons_Api();
-        $probe = $api->get_settings();
-        $ok = ! is_wp_error($probe);
+        $probe = null;
+        $ok = false;
+        if ($api->has_base_url()) {
+            $probe = $api->get_settings();
+            $ok = ! is_wp_error($probe);
+        }
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('FF Addons', 'ff-addons'); ?></h1>
@@ -63,8 +78,9 @@ class FF_Addons_Admin
                         <th scope="row"><label for="ff_addons_api_base_url"><?php echo esc_html__('API base URL', 'ff-addons'); ?></label></th>
                         <td>
                             <input type="url" class="regular-text" id="ff_addons_api_base_url" name="ff_addons_api_base_url"
-                                   value="<?php echo esc_attr((string) get_option('ff_addons_api_base_url', 'https://app.facefood.cafe/api')); ?>">
-                            <p class="description"><?php echo esc_html__('Default: https://app.facefood.cafe/api', 'ff-addons'); ?></p>
+                                   value="<?php echo esc_attr($apiUrl); ?>"
+                                   placeholder="https://example.com/api">
+                            <p class="description"><?php echo esc_html__('Optional. Leave empty to disable API-backed widgets until configured.', 'ff-addons'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -86,11 +102,14 @@ class FF_Addons_Admin
             </form>
 
             <h2><?php echo esc_html__('API status', 'ff-addons'); ?></h2>
-            <?php if ($ok) : ?>
+            <?php if ($apiUrl === '') : ?>
+                <p style="color:#646970;"><strong><?php echo esc_html__('Not configured', 'ff-addons'); ?></strong>
+                    — <?php echo esc_html__('Enter an API base URL above to enable catalog requests.', 'ff-addons'); ?></p>
+            <?php elseif ($ok) : ?>
                 <p style="color:#008a20;"><strong><?php echo esc_html__('Connected', 'ff-addons'); ?></strong></p>
             <?php else : ?>
                 <p style="color:#b32d2e;"><strong><?php echo esc_html__('Could not reach API', 'ff-addons'); ?></strong>
-                    — <?php echo esc_html($probe->get_error_message()); ?></p>
+                    — <?php echo esc_html(is_wp_error($probe) ? $probe->get_error_message() : ''); ?></p>
             <?php endif; ?>
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>

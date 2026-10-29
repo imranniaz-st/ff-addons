@@ -1,6 +1,7 @@
 /* Elementor editor: keep widgets selectable / visible */
 .elementor-editor-active .ff-addons-grid,
 .elementor-editor-active .ff-addons-categories,
-.elementor-editor-active .ff-addons-cta {
+.elementor-editor-active .ff-addons-cta,
+.elementor-editor-active .ff-addons-about {
   min-height: 48px;
 }

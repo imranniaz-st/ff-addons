@@ -201,5 +201,65 @@ class FF_Addons_WPBakery
                 ],
             ],
         ]);
+
+        vc_map([
+            'name' => __('FF About Us', 'ff-addons'),
+            'base' => 'ff_addons_about',
+            'category' => [
+                __('FF Addons', 'ff-addons'),
+                __('FF Addons · General', 'ff-addons'),
+            ],
+            'icon' => 'icon-wpb-ui-custom_heading',
+            'description' => __('About Us section with image and dual CTAs.', 'ff-addons'),
+            'params' => [
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Title', 'ff-addons'),
+                    'param_name' => 'title',
+                    'value' => __('About Us', 'ff-addons'),
+                ],
+                [
+                    'type' => 'textarea_html',
+                    'heading' => __('Description', 'ff-addons'),
+                    'param_name' => 'content',
+                ],
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Image URL', 'ff-addons'),
+                    'param_name' => 'image',
+                    'value' => 'https://driphydration.com/wp-content/uploads/2025/05/Our-Nurses.png',
+                ],
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Image alt text', 'ff-addons'),
+                    'param_name' => 'image_alt',
+                    'value' => __('About Us', 'ff-addons'),
+                ],
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Primary button label', 'ff-addons'),
+                    'param_name' => 'primary_button',
+                    'value' => __('BOOK IV THERAPY', 'ff-addons'),
+                ],
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Primary button URL', 'ff-addons'),
+                    'param_name' => 'primary_url',
+                    'value' => 'https://driphydration.com/iv-therapy/',
+                ],
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Secondary button label', 'ff-addons'),
+                    'param_name' => 'secondary_button',
+                    'value' => __('VIEW PLANS', 'ff-addons'),
+                ],
+                [
+                    'type' => 'textfield',
+                    'heading' => __('Secondary button URL', 'ff-addons'),
+                    'param_name' => 'secondary_url',
+                    'value' => 'https://driphydration.com/vitamin-drip-membership/',
+                ],
+            ],
+        ]);
     }
 }

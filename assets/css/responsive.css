@@ -30,3 +30,208 @@
     padding: 1.75rem 1.15rem;
   }
 }
+
+/* About Us */
+@media only screen and (max-width: 1000px) {
+  .ff-addons-about__title {
+    height: auto !important;
+    padding: 30px 0 !important;
+  }
+}
+
+@media only screen and (max-width: 768px) {
+  .ff-addons-about__title {
+    padding: 25px 0 !important;
+    text-align: center;
+  }
+
+  .ff-addons-about__body {
+    text-align: center;
+    padding-bottom: 20px;
+  }
+
+  .ff-addons-about__actions {
+    justify-content: center;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .ff-addons-about__title {
+    padding: 15px 0 !important;
+  }
+}
+
+@media only screen and (min-width: 1771px) {
+  .ff-addons-about__title {
+    font-size: 45px;
+    line-height: 57px;
+  }
+}
+
+@media only screen and (min-width: 1591px) and (max-width: 1770px) {
+  .ff-addons-about__title {
+    font-size: 42px;
+    line-height: 54px;
+  }
+}
+
+@media only screen and (min-width: 1426px) and (max-width: 1590px) {
+  .ff-addons-about__title {
+    font-size: 39px;
+    line-height: 50px;
+  }
+}
+
+@media only screen and (min-width: 1261px) and (max-width: 1425px) {
+  .ff-addons-about__title {
+    font-size: 37px;
+    line-height: 48px;
+  }
+}
+
+@media only screen and (min-width: 1061px) and (max-width: 1260px) {
+  .ff-addons-about__title {
+    font-size: 35px;
+    line-height: 45px;
+  }
+}
+
+@media only screen and (min-width: 1001px) and (max-width: 1060px) {
+  .ff-addons-about__title {
+    font-size: 35px;
+    line-height: 45px;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 1000px) {
+  .ff-addons-about__title {
+    font-size: 35px;
+    line-height: 45px;
+  }
+}
+
+@media only screen and (min-width: 601px) and (max-width: 767px) {
+  .ff-addons-about__title {
+    font-size: 35px;
+    line-height: 45px;
+  }
+}
+
+@media only screen and (min-width: 481px) and (max-width: 600px) {
+  .ff-addons-about__title {
+    font-size: 35px;
+    line-height: 45px;
+  }
+}
+
+@media only screen and (min-width: 401px) and (max-width: 480px) {
+  .ff-addons-about__title {
+    font-size: 30px;
+    line-height: 40px;
+  }
+}
+
+@media only screen and (min-width: 321px) and (max-width: 400px) {
+  .ff-addons-about__title {
+    font-size: 25px;
+    line-height: 35px;
+  }
+}
+
+@media only screen and (max-width: 320px) {
+  .ff-addons-about__title {
+    font-size: 20px;
+    line-height: 30px;
+  }
+}
+
+@media (max-width: 1100px) {
+  .ff-addons-about__content {
+    max-width: 390px;
+  }
+}
+
+@media (max-width: 992px) {
+  .ff-addons-about__image {
+    width: 49%;
+  }
+
+  .ff-addons-about__title {
+    font-size: 30px !important;
+    line-height: 34px !important;
+  }
+}
+
+@media (max-width: 940px) {
+  .ff-addons-about__content {
+    max-width: 340px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ff-addons-about {
+    flex-direction: column;
+  }
+
+  .ff-addons-about__image {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    object-position: center top;
+  }
+
+  .ff-addons-about__content {
+    padding: 50px 16px 47px;
+    max-width: initial;
+    width: 100%;
+    margin-top: 6rem;
+  }
+
+  .ff-addons-about__title {
+    padding-bottom: 0 !important;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 576px) {
+  .ff-addons-about__image {
+    height: 191px;
+    object-position: left center;
+  }
+
+  .ff-addons-about__content {
+    display: flex;
+    flex-direction: column;
+    padding: 40px 16px 47px;
+  }
+
+  .ff-addons-about__heading {
+    order: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ff-addons-about__actions {
+    flex-direction: column;
+    align-items: baseline;
+    order: 2;
+    margin-top: 1rem;
+  }
+
+  .ff-addons-about__body {
+    order: 3;
+  }
+
+  .ff-addons-about__btn {
+    max-width: 100%;
+    width: 100% !important;
+    padding: 14px 10px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .ff-addons-about__btn {
+    padding: 14px 10px;
+  }
+}

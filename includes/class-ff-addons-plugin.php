@@ -15,8 +15,9 @@ class FF_Addons_Plugin
 
     public static function activate(): void
     {
+        // API base URL is optional — configure in Settings → FF Addons when needed.
         if (get_option('ff_addons_api_base_url') === false) {
-            add_option('ff_addons_api_base_url', 'https://app.facefood.cafe/api');
+            add_option('ff_addons_api_base_url', '');
         }
         if (get_option('ff_addons_cache_ttl') === false) {
             add_option('ff_addons_cache_ttl', 300);
@@ -42,6 +43,7 @@ class FF_Addons_Plugin
         add_shortcode('ff_addons_deals', [$this, 'shortcode_deals']);
         add_shortcode('ff_addons_cta', [$this, 'shortcode_cta']);
         add_shortcode('ff_addons_categories', [$this, 'shortcode_categories']);
+        add_shortcode('ff_addons_about', [$this, 'shortcode_about']);
 
         add_action('elementor/loaded', static function (): void {
             require_once FF_ADDONS_DIR . 'elementor/class-ff-addons-elementor.php';
@@ -63,6 +65,7 @@ class FF_Addons_Plugin
         wp_register_style('ff-addons-deals', $base . 'deals.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-categories', $base . 'categories.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-cta', $base . 'cta.css', ['ff-addons-base'], $ver);
+        wp_register_style('ff-addons-about', $base . 'about.css', ['ff-addons-base'], $ver);
         // After components so breakpoint rules win over base layouts.
         wp_register_style('ff-addons-responsive', $base . 'responsive.css', ['ff-addons-base'], $ver);
         wp_register_style('ff-addons-editor', $base . 'editor.css', [], $ver);
@@ -76,6 +79,7 @@ class FF_Addons_Plugin
         wp_enqueue_style('ff-addons-deals');
         wp_enqueue_style('ff-addons-categories');
         wp_enqueue_style('ff-addons-cta');
+        wp_enqueue_style('ff-addons-about');
         wp_enqueue_style('ff-addons-responsive');
         wp_enqueue_style('ff-addons-editor');
     }
@@ -165,6 +169,39 @@ class FF_Addons_Plugin
             'link_base' => (string) $atts['link_base'],
             'show_count' => $atts['show_count'] !== 'no',
             'categories' => (string) $atts['categories'],
+        ]);
+    }
+
+    /**
+     * @param  array<string, string>|string  $atts
+     */
+    public function shortcode_about($atts = [], ?string $content = null): string
+    {
+        $atts = shortcode_atts([
+            'title' => __('About Us', 'ff-addons'),
+            'description' => '',
+            'image' => 'https://driphydration.com/wp-content/uploads/2025/05/Our-Nurses.png',
+            'image_alt' => __('About Us', 'ff-addons'),
+            'primary_button' => __('BOOK IV THERAPY', 'ff-addons'),
+            'primary_url' => 'https://driphydration.com/iv-therapy/',
+            'secondary_button' => __('VIEW PLANS', 'ff-addons'),
+            'secondary_url' => 'https://driphydration.com/vitamin-drip-membership/',
+        ], $atts, 'ff_addons_about');
+
+        $description = (string) $atts['description'];
+        if (is_string($content) && trim($content) !== '') {
+            $description = $content;
+        }
+
+        return $this->render_about([
+            'title' => (string) $atts['title'],
+            'description' => $description,
+            'image' => (string) $atts['image'],
+            'image_alt' => (string) $atts['image_alt'],
+            'primary_button' => (string) $atts['primary_button'],
+            'primary_url' => (string) $atts['primary_url'],
+            'secondary_button' => (string) $atts['secondary_button'],
+            'secondary_url' => (string) $atts['secondary_url'],
         ]);
     }
 
@@ -304,6 +341,68 @@ class FF_Addons_Plugin
                 <?php if ($button !== '' && $url !== '') : ?>
                     <a class="ff-addons-cta__button" href="<?php echo esc_url($url); ?>"><?php echo esc_html($button); ?></a>
                 <?php endif; ?>
+            </div>
+        </section>
+        <?php
+
+        return (string) ob_get_clean();
+    }
+
+    /**
+     * @param  array<string, mixed>  $args
+     */
+    public function render_about(array $args = []): string
+    {
+        $this->enqueue_styles(['ff-addons-about']);
+
+        $title = (string) ($args['title'] ?? __('About Us', 'ff-addons'));
+        $description = (string) ($args['description'] ?? '');
+        if ($description === '') {
+            $description = '<p>' . esc_html__('Drip Hydration brings IV therapy and medical care directly to you, in the comfort of your home. With providers in 100+ cities worldwide, our goal is simple: make getting quality care convenient, comfortable, and personal.', 'ff-addons') . '</p><p>' . esc_html__('Our nurses are a big part of what makes the experience different. Many come from emergency rooms, ICUs, labor and delivery, and other fast-paced clinical settings where starting IVs and caring for patients is part of their everyday work.', 'ff-addons') . '</p>';
+        }
+        $image = (string) ($args['image'] ?? 'https://driphydration.com/wp-content/uploads/2025/05/Our-Nurses.png');
+        $imageAlt = (string) ($args['image_alt'] ?? $title);
+        $primaryButton = (string) ($args['primary_button'] ?? __('BOOK IV THERAPY', 'ff-addons'));
+        $primaryUrl = (string) ($args['primary_url'] ?? 'https://driphydration.com/iv-therapy/');
+        $secondaryButton = (string) ($args['secondary_button'] ?? __('VIEW PLANS', 'ff-addons'));
+        $secondaryUrl = (string) ($args['secondary_url'] ?? 'https://driphydration.com/vitamin-drip-membership/');
+
+        ob_start();
+        ?>
+        <section class="ff-addons-about">
+            <?php if ($image !== '') : ?>
+                <picture class="ff-addons-about__picture">
+                    <img
+                        class="ff-addons-about__image"
+                        src="<?php echo esc_url($image); ?>"
+                        alt="<?php echo esc_attr($imageAlt !== '' ? $imageAlt : $title); ?>"
+                        loading="lazy"
+                    >
+                </picture>
+            <?php endif; ?>
+            <div class="ff-addons-about__container">
+                <div class="ff-addons-about__content">
+                    <?php if ($title !== '') : ?>
+                        <div class="ff-addons-about__heading">
+                            <h1 class="ff-addons-about__title"><?php echo esc_html($title); ?></h1>
+                        </div>
+                    <?php endif; ?>
+                    <?php if ($description !== '') : ?>
+                        <div class="ff-addons-about__body">
+                            <div class="ff-addons-about__text"><?php echo wp_kses_post($description); ?></div>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (($primaryButton !== '' && $primaryUrl !== '') || ($secondaryButton !== '' && $secondaryUrl !== '')) : ?>
+                        <div class="ff-addons-about__actions">
+                            <?php if ($primaryButton !== '' && $primaryUrl !== '') : ?>
+                                <a class="ff-addons-about__btn ff-addons-about__btn--primary" href="<?php echo esc_url($primaryUrl); ?>"><?php echo esc_html($primaryButton); ?></a>
+                            <?php endif; ?>
+                            <?php if ($secondaryButton !== '' && $secondaryUrl !== '') : ?>
+                                <a class="ff-addons-about__btn ff-addons-about__btn--secondary" href="<?php echo esc_url($secondaryUrl); ?>"><?php echo esc_html($secondaryButton); ?></a>
+                            <?php endif; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
             </div>
         </section>
         <?php

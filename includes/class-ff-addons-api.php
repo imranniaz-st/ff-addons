@@ -5,7 +5,10 @@ if (! defined('ABSPATH')) {
 }
 
 /**
- * Thin client for the Facefood Laravel public API (app.facefood.cafe/api).
+ * Thin client for the Facefood Laravel public API.
+ *
+ * Base URL is optional and read from the ff_addons_api_base_url option.
+ * When unset/empty, requests return a WP_Error instead of calling a hardcoded host.
  */
 class FF_Addons_Api
 {
@@ -15,8 +18,17 @@ class FF_Addons_Api
 
     public function __construct(?string $baseUrl = null)
     {
-        $configured = $baseUrl ?? (string) get_option('ff_addons_api_base_url', 'https://app.facefood.cafe/api');
-        $this->baseUrl = untrailingslashit($configured);
+        if ($baseUrl !== null) {
+            $configured = $baseUrl;
+        } else {
+            $configured = (string) get_option('ff_addons_api_base_url', '');
+        }
+        $this->baseUrl = untrailingslashit(trim($configured));
+    }
+
+    public function has_base_url(): bool
+    {
+        return $this->baseUrl !== '';
     }
 
     public function bypass_cache(bool $bypass = true): self
@@ -51,6 +63,13 @@ class FF_Addons_Api
      */
     private function get(string $path, array $query = []): array|WP_Error
     {
+        if ($this->baseUrl === '') {
+            return new WP_Error(
+                'ff_addons_api_not_configured',
+                __('API base URL is not configured. Set it under Settings → FF Addons.', 'ff-addons')
+            );
+        }
+
         $url = $this->baseUrl . '/' . ltrim($path, '/');
         if ($query !== []) {
             $url = add_query_arg(array_filter($query, static fn ($v) => $v !== null && $v !== ''), $url);
