@@ -38,7 +38,7 @@ class FF_Addons_Widget_Instagram extends FF_Addons_Widget_Base
 
     public function get_script_depends(): array
     {
-        return ['ff-addons-instagram', 'instagram-embed'];
+        return ['ff-addons-instagram'];
     }
 
     protected function register_controls(): void
@@ -85,38 +85,12 @@ class FF_Addons_Widget_Instagram extends FF_Addons_Widget_Base
         $this->add_control('source', [
             'label' => __('Source', 'ff-addons'),
             'type' => \Elementor\Controls_Manager::SELECT,
-            'default' => 'posts',
+            'default' => 'api',
             'options' => [
-                'posts' => __('Instagram post URLs (embeds)', 'ff-addons'),
-                'api' => __('Instagram Graph API (token)', 'ff-addons'),
+                'api' => __('Auto from Instagram (token)', 'ff-addons'),
                 'curated' => __('Curated Media Library', 'ff-addons'),
             ],
-            'description' => __('Post URLs show real Instagram media via official embeds. Graph API needs a long-lived token in Settings → FF Addons.', 'ff-addons'),
-        ]);
-
-        $this->add_control('post_urls', [
-            'label' => __('Instagram post URLs', 'ff-addons'),
-            'type' => \Elementor\Controls_Manager::REPEATER,
-            'condition' => ['source' => 'posts'],
-            'fields' => [
-                [
-                    'name' => 'url',
-                    'label' => __('Post URL', 'ff-addons'),
-                    'type' => \Elementor\Controls_Manager::TEXT,
-                    'default' => '',
-                    'label_block' => true,
-                    'placeholder' => 'https://www.instagram.com/p/…/',
-                    'dynamic' => ['active' => true],
-                ],
-            ],
-            'default' => [
-                ['url' => ''],
-                ['url' => ''],
-                ['url' => ''],
-                ['url' => ''],
-            ],
-            'title_field' => '{{{ url || "Post URL" }}}',
-            'description' => __('Open a post on Instagram → Share → Copy link. Paste one URL per row.', 'ff-addons'),
+            'description' => __('Auto mode fetches recent posts via the Instagram Graph API and renders them as custom gallery cards (no Instagram embeds). Updates refresh after Cache TTL.', 'ff-addons'),
         ]);
 
         $this->add_control('api_limit', [
@@ -131,7 +105,7 @@ class FF_Addons_Widget_Instagram extends FF_Addons_Widget_Base
         $this->add_control('api_hint', [
             'type' => \Elementor\Controls_Manager::RAW_HTML,
             'condition' => ['source' => 'api'],
-            'raw' => '<p style="margin:0;">' . esc_html__('Configure the long-lived Instagram access token under Settings → FF Addons. Uses graph.instagram.com/me/media (official API only).', 'ff-addons') . '</p>',
+            'raw' => '<p style="margin:0;">' . esc_html__('Paste a long-lived Instagram access token under Settings → FF Addons. Thumbnails, captions, and permalinks come from the API and display in this plugin’s own grid.', 'ff-addons') . '</p>',
         ]);
 
         $this->add_control('items', [
@@ -248,22 +222,20 @@ class FF_Addons_Widget_Instagram extends FF_Addons_Widget_Base
             ];
         }
 
-        $postUrls = [];
-        $rawPosts = is_array($s['post_urls'] ?? null) ? $s['post_urls'] : [];
-        foreach ($rawPosts as $row) {
-            if (! is_array($row)) {
-                continue;
-            }
-            $url = trim((string) ($row['url'] ?? ''));
-            if ($url !== '') {
-                $postUrls[] = $url;
-            }
-        }
-
         $source = (string) ($s['source'] ?? '');
-        if (! in_array($source, ['curated', 'posts', 'api'], true)) {
-            // Older widgets were curated-only and had no Source control.
-            $source = $items !== [] ? 'curated' : 'posts';
+        // Legacy "posts" (embeds) maps to auto API feed; older curated-only widgets keep curated when items exist.
+        if ($source === 'posts') {
+            $source = 'api';
+        }
+        if (! in_array($source, ['curated', 'api'], true)) {
+            $token = trim((string) get_option('ff_addons_instagram_token', ''));
+            if ($items !== []) {
+                $source = 'curated';
+            } elseif ($token !== '') {
+                $source = 'api';
+            } else {
+                $source = 'api';
+            }
         }
 
         // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -275,7 +247,6 @@ class FF_Addons_Widget_Instagram extends FF_Addons_Widget_Base
             'profile_external' => $profileExternal,
             'profile_nofollow' => $profileNofollow,
             'source' => $source,
-            'post_urls' => $postUrls,
             'items' => $items,
             'columns' => (int) ($s['columns'] ?? 4),
             'limit' => (int) ($s['api_limit'] ?? 8),

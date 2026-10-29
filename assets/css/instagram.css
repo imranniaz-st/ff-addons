@@ -1,4 +1,4 @@
-/* Instagram — curated / embeds / Graph API gallery */
+/* Instagram — auto Graph API + curated custom gallery cards */
 .ff-addons-instagram.instagram-section-wrapper,
 .instagram-section-wrapper {
   width: 100%;
@@ -259,35 +259,6 @@
 
 .instagram-empty__link:hover {
   text-decoration: underline;
-}
-
-/* Official Instagram embeds (post URL source) */
-.instagram-grid--embeds .instagram-item--embed {
-  aspect-ratio: auto;
-  min-height: 280px;
-  overflow: hidden;
-  background: #fff;
-  cursor: default;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-}
-
-.instagram-grid--embeds .instagram-item--embed:hover img {
-  transform: none;
-}
-
-.instagram-grid--embeds .instagram-item--embed blockquote.instagram-media,
-.instagram-grid--embeds .instagram-item--embed iframe,
-.instagram-grid--embeds .instagram-item--embed .instagram-media {
-  margin: 0 auto !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  width: 100% !important;
-}
-
-.instagram-grid--embeds .instagram-item--embed > * {
-  width: 100%;
 }
 
 /* Lightbox */

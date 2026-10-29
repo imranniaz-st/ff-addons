@@ -10,6 +10,8 @@ class FF_Addons_Admin
     {
         add_action('admin_menu', [$this, 'register_menu']);
         add_action('admin_init', [$this, 'register_settings']);
+        add_action('update_option_ff_addons_instagram_token', [$this, 'on_instagram_credentials_changed'], 10, 0);
+        add_action('update_option_ff_addons_instagram_user_id', [$this, 'on_instagram_credentials_changed'], 10, 0);
     }
 
     public function register_menu(): void
@@ -45,6 +47,11 @@ class FF_Addons_Admin
             'sanitize_callback' => [$this, 'sanitize_instagram_token'],
             'default' => '',
         ]);
+        register_setting('ff_addons', 'ff_addons_instagram_user_id', [
+            'type' => 'string',
+            'sanitize_callback' => [$this, 'sanitize_instagram_user_id'],
+            'default' => '',
+        ]);
     }
 
     public function sanitize_instagram_token($value): string
@@ -57,6 +64,16 @@ class FF_Addons_Admin
         return sanitize_text_field($value);
     }
 
+    public function sanitize_instagram_user_id($value): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+        if ($value === '' || ! preg_match('/^\d+$/', $value)) {
+            return '';
+        }
+
+        return $value;
+    }
+
     public function sanitize_api_base_url($value): string
     {
         $value = is_string($value) ? trim($value) : '';
@@ -65,6 +82,11 @@ class FF_Addons_Admin
         }
 
         return esc_url_raw($value);
+    }
+
+    public function on_instagram_credentials_changed(): void
+    {
+        FF_Addons_Plugin::instance()->clear_instagram_media_cache();
     }
 
     public function render_page(): void
@@ -81,6 +103,9 @@ class FF_Addons_Admin
             $probe = $api->get_settings();
             $ok = ! is_wp_error($probe);
         }
+
+        $igToken = (string) get_option('ff_addons_instagram_token', '');
+        $igUserId = (string) get_option('ff_addons_instagram_user_id', '');
         ?>
         <div class="wrap">
             <h1><?php echo esc_html__('FF Addons', 'ff-addons'); ?></h1>
@@ -103,6 +128,7 @@ class FF_Addons_Admin
                         <td>
                             <input type="number" min="60" class="small-text" id="ff_addons_cache_ttl" name="ff_addons_cache_ttl"
                                    value="<?php echo esc_attr((string) get_option('ff_addons_cache_ttl', 300)); ?>">
+                            <p class="description"><?php echo esc_html__('Also controls how often the Instagram auto feed refreshes from Instagram.', 'ff-addons'); ?></p>
                         </td>
                     </tr>
                     <tr>
@@ -116,11 +142,24 @@ class FF_Addons_Admin
                         <th scope="row"><label for="ff_addons_instagram_token"><?php echo esc_html__('Instagram access token', 'ff-addons'); ?></label></th>
                         <td>
                             <input type="password" class="regular-text" id="ff_addons_instagram_token" name="ff_addons_instagram_token"
-                                   value="<?php echo esc_attr((string) get_option('ff_addons_instagram_token', '')); ?>"
+                                   value="<?php echo esc_attr($igToken); ?>"
                                    autocomplete="off"
-                                   placeholder="<?php echo esc_attr__('Long-lived Instagram Graph / Basic Display token', 'ff-addons'); ?>">
+                                   placeholder="<?php echo esc_attr__('Long-lived Instagram Graph API token', 'ff-addons'); ?>">
                             <p class="description">
-                                <?php echo esc_html__('Optional. Used when FF Instagram Source = Graph API. Create a Meta app, connect the Instagram professional account, then paste a long-lived token. Leave empty and use Instagram post URLs in the widget instead.', 'ff-addons'); ?>
+                                <?php echo esc_html__('Required for FF Instagram “Auto from Instagram”. Creates a custom thumbnail grid (media_url / caption / permalink) — not Instagram embeds. Use a long-lived token from a Meta app connected to your Instagram professional account.', 'ff-addons'); ?>
+                            </p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ff_addons_instagram_user_id"><?php echo esc_html__('Instagram user ID (optional)', 'ff-addons'); ?></label></th>
+                        <td>
+                            <input type="text" class="regular-text" id="ff_addons_instagram_user_id" name="ff_addons_instagram_user_id"
+                                   value="<?php echo esc_attr($igUserId); ?>"
+                                   inputmode="numeric"
+                                   pattern="[0-9]*"
+                                   placeholder="<?php echo esc_attr__('Numeric Instagram professional account ID', 'ff-addons'); ?>">
+                            <p class="description">
+                                <?php echo esc_html__('Only needed if graph.instagram.com/me/media fails and you use a Facebook Graph / Page token. Leave empty for Instagram Login tokens.', 'ff-addons'); ?>
                             </p>
                         </td>
                     </tr>
@@ -137,6 +176,15 @@ class FF_Addons_Admin
             <?php else : ?>
                 <p style="color:#b32d2e;"><strong><?php echo esc_html__('Could not reach API', 'ff-addons'); ?></strong>
                     — <?php echo esc_html(is_wp_error($probe) ? $probe->get_error_message() : ''); ?></p>
+            <?php endif; ?>
+
+            <h2><?php echo esc_html__('Instagram feed', 'ff-addons'); ?></h2>
+            <?php if ($igToken === '') : ?>
+                <p style="color:#646970;"><strong><?php echo esc_html__('Token not set', 'ff-addons'); ?></strong>
+                    — <?php echo esc_html__('Paste a long-lived token above, then set FF Instagram Source to “Auto from Instagram”.', 'ff-addons'); ?></p>
+            <?php else : ?>
+                <p style="color:#008a20;"><strong><?php echo esc_html__('Token saved', 'ff-addons'); ?></strong>
+                    — <?php echo esc_html__('Feed refreshes automatically using Cache TTL. Saving a new token clears the media cache.', 'ff-addons'); ?></p>
             <?php endif; ?>
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>

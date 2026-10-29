@@ -28,6 +28,9 @@ class FF_Addons_Plugin
         if (get_option('ff_addons_instagram_token') === false) {
             add_option('ff_addons_instagram_token', '');
         }
+        if (get_option('ff_addons_instagram_user_id') === false) {
+            add_option('ff_addons_instagram_user_id', '');
+        }
     }
 
     public function init(): void
@@ -100,13 +103,6 @@ class FF_Addons_Plugin
         wp_register_style('ff-addons-editor', $css . 'editor.css', [], $ver);
 
         wp_register_script('ff-addons-instagram', $js . 'instagram.js', [], $ver, true);
-        wp_register_script(
-            'instagram-embed',
-            'https://www.instagram.com/embed.js',
-            [],
-            null,
-            true
-        );
     }
 
     /** Elementor editor / preview: load all component styles. */
@@ -125,7 +121,6 @@ class FF_Addons_Plugin
         wp_enqueue_style('ff-addons-responsive');
         wp_enqueue_style('ff-addons-editor');
         wp_enqueue_script('ff-addons-instagram');
-        wp_enqueue_script('instagram-embed');
     }
 
     /** @param list<string> $handles */
@@ -272,12 +267,14 @@ class FF_Addons_Plugin
             'profile_url' => 'https://www.instagram.com/facefood_pwd_/',
             'columns' => '4',
             'button_text' => __('Follow on Instagram', 'ff-addons'),
-            'source' => 'posts',
-            'post_urls' => '',
+            'source' => 'api',
             'limit' => '8',
         ], $atts, 'ff_addons_instagram');
 
-        $postUrls = array_values(array_filter(array_map('trim', preg_split('/[\s,]+/', (string) $atts['post_urls']) ?: [])));
+        $source = (string) $atts['source'];
+        if ($source === 'posts') {
+            $source = 'api';
+        }
 
         return $this->render_instagram([
             'subtitle' => (string) $atts['subtitle'],
@@ -286,8 +283,7 @@ class FF_Addons_Plugin
             'profile_url' => (string) $atts['profile_url'],
             'profile_external' => true,
             'profile_nofollow' => true,
-            'source' => (string) $atts['source'],
-            'post_urls' => $postUrls,
+            'source' => $source,
             'items' => [],
             'columns' => (int) $atts['columns'],
             'limit' => (int) $atts['limit'],
@@ -618,7 +614,8 @@ class FF_Addons_Plugin
     }
 
     /**
-     * Instagram gallery: curated Media Library, official post embeds, or Graph API media.
+     * Instagram gallery: live Graph API feed (default) or curated Media Library.
+     * Always renders custom HTML/CSS cards — never Instagram embeds / oEmbed / embed.js.
      *
      * @param  array<string, mixed>  $args
      */
@@ -636,23 +633,23 @@ class FF_Addons_Plugin
         $buttonText = (string) ($args['button_text'] ?? '');
         $columns = max(2, min(6, (int) ($args['columns'] ?? 4)));
         $limit = max(1, min(24, (int) ($args['limit'] ?? 8)));
-        $source = (string) ($args['source'] ?? 'posts');
-        if (! in_array($source, ['curated', 'posts', 'api'], true)) {
-            $source = 'posts';
+        $source = (string) ($args['source'] ?? 'api');
+        // Legacy embed mode ("posts") → auto API feed with custom cards.
+        if ($source === 'posts') {
+            $source = 'api';
+        }
+        if (! in_array($source, ['curated', 'api'], true)) {
+            $source = 'api';
         }
 
         $items = $args['items'] ?? [];
         if (! is_array($items)) {
             $items = [];
         }
-        $postUrls = $args['post_urls'] ?? [];
-        if (! is_array($postUrls)) {
-            $postUrls = [];
-        }
 
+        $token = trim((string) get_option('ff_addons_instagram_token', ''));
         $mode = 'empty';
         $galleryItems = [];
-        $embedHtmls = [];
         $emptyMessage = '';
 
         if ($source === 'api') {
@@ -660,30 +657,9 @@ class FF_Addons_Plugin
             if ($galleryItems !== []) {
                 $mode = 'images';
             } else {
-                $token = (string) get_option('ff_addons_instagram_token', '');
                 $emptyMessage = $token === ''
-                    ? __('Add an Instagram Graph API token under Settings → FF Addons, or switch Source to Instagram post URLs.', 'ff-addons')
-                    : __('Could not load Instagram media. Check the token, or use Instagram post URLs instead.', 'ff-addons');
-            }
-        } elseif ($source === 'posts') {
-            foreach ($postUrls as $url) {
-                if (! is_string($url)) {
-                    continue;
-                }
-                $url = $this->normalize_instagram_post_url($url);
-                if ($url === '') {
-                    continue;
-                }
-                $html = $this->get_instagram_post_embed($url);
-                if ($html !== '') {
-                    $embedHtmls[] = ['url' => $url, 'html' => $html];
-                }
-            }
-            if ($embedHtmls !== []) {
-                $mode = 'embeds';
-                wp_enqueue_script('instagram-embed');
-            } else {
-                $emptyMessage = __('Add Instagram post URLs in the widget settings (open a post → Copy link).', 'ff-addons');
+                    ? __('Add an Instagram access token under Settings → FF Addons for automatic updates, or switch Source to Curated Media Library.', 'ff-addons')
+                    : __('Could not load Instagram media. Check the token (and that it is long-lived), or switch Source to Curated Media Library.', 'ff-addons');
             }
         } else {
             foreach ($items as $item) {
@@ -703,7 +679,7 @@ class FF_Addons_Plugin
             if ($galleryItems !== []) {
                 $mode = 'images';
             } else {
-                $emptyMessage = __('Add gallery images from the Media Library, or switch Source to Instagram post URLs.', 'ff-addons');
+                $emptyMessage = __('Add gallery images from the Media Library, or switch Source to Auto from Instagram.', 'ff-addons');
             }
         }
 
@@ -745,15 +721,7 @@ class FF_Addons_Plugin
                     <?php endif; ?>
                 </div>
 
-                <?php if ($mode === 'embeds') : ?>
-                    <div class="instagram-grid instagram-grid--embeds" style="--ff-cols:<?php echo esc_attr((string) $columns); ?>">
-                        <?php foreach ($embedHtmls as $embed) : ?>
-                            <div class="instagram-item instagram-item--embed">
-                                <?php echo $embed['html']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — oEmbed / official IG embed markup ?>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
-                <?php elseif ($mode === 'images') : ?>
+                <?php if ($mode === 'images') : ?>
                     <div class="instagram-grid" style="--ff-cols:<?php echo esc_attr((string) $columns); ?>">
                         <?php foreach ($galleryItems as $item) :
                             $image = (string) ($item['image'] ?? '');
@@ -821,41 +789,10 @@ class FF_Addons_Plugin
     }
 
     /**
-     * Normalize a public Instagram post / reel URL.
-     */
-    private function normalize_instagram_post_url(string $url): string
-    {
-        $url = trim($url);
-        if ($url === '') {
-            return '';
-        }
-        $url = esc_url_raw($url);
-        if ($url === '' || ! preg_match('#^https?://(www\.)?instagram\.com/(p|reel|tv)/[^/\s?#]+#i', $url)) {
-            return '';
-        }
-
-        return untrailingslashit($url) . '/';
-    }
-
-    /**
-     * Official Instagram embed (wp_oembed_get when available, else embed.js blockquote).
-     */
-    private function get_instagram_post_embed(string $url): string
-    {
-        $oembed = wp_oembed_get($url, ['width' => 540]);
-        if (is_string($oembed) && $oembed !== '') {
-            return $oembed;
-        }
-
-        $permalink = esc_url($url);
-
-        return '<blockquote class="instagram-media" data-instgrm-permalink="' . $permalink . '" data-instgrm-version="14" style="background:#FFF;border:0;border-radius:12px;margin:0;max-width:100%;min-width:0;padding:0;width:100%;">'
-            . '<a href="' . $permalink . '" target="_blank" rel="noopener noreferrer">' . esc_html($url) . '</a>'
-            . '</blockquote>';
-    }
-
-    /**
-     * Fetch recent media via Instagram Graph / Basic Display API (long-lived token).
+     * Fetch recent media via Instagram Graph API (auto-updating feed).
+     *
+     * Tries Instagram Login host first (graph.instagram.com), then Facebook Graph
+     * with an optional Instagram professional account ID.
      *
      * @return list<array{image: string, caption: string, link: string}>
      */
@@ -866,35 +803,71 @@ class FF_Addons_Plugin
             return [];
         }
 
-        $cacheKey = 'ff_addons_ig_media_' . md5($token . '|' . $limit);
-        if (! FF_Addons_Helpers::is_elementor_edit()) {
+        $userId = trim((string) get_option('ff_addons_instagram_user_id', ''));
+        $cacheKey = 'ff_addons_ig_media_' . md5($token . '|' . $userId . '|' . $limit);
+        $bypassCache = FF_Addons_Helpers::is_elementor_edit();
+
+        if (! $bypassCache) {
             $cached = get_transient($cacheKey);
-            if (is_array($cached)) {
+            if (is_array($cached) && isset($cached['items']) && is_array($cached['items'])) {
+                return $cached['items'];
+            }
+            // Legacy cache shape (plain list).
+            if (is_array($cached) && $cached !== [] && isset($cached[0]) && is_array($cached[0])) {
                 return $cached;
             }
         }
 
-        $endpoint = add_query_arg(
-            [
-                'fields' => 'id,caption,media_type,media_url,permalink,thumbnail_url',
-                'limit' => $limit,
-                'access_token' => $token,
-            ],
-            'https://graph.instagram.com/me/media'
-        );
+        $fields = 'id,caption,media_type,media_url,permalink,thumbnail_url,timestamp';
+        $endpoints = [
+            add_query_arg(
+                [
+                    'fields' => $fields,
+                    'limit' => $limit,
+                    'access_token' => $token,
+                ],
+                'https://graph.instagram.com/v21.0/me/media'
+            ),
+        ];
 
-        $response = wp_remote_get($endpoint, [
-            'timeout' => 15,
-            'headers' => ['Accept' => 'application/json'],
-        ]);
-
-        if (is_wp_error($response)) {
-            return [];
+        if ($userId !== '' && preg_match('/^\d+$/', $userId)) {
+            $endpoints[] = add_query_arg(
+                [
+                    'fields' => $fields,
+                    'limit' => $limit,
+                    'access_token' => $token,
+                ],
+                'https://graph.facebook.com/v21.0/' . rawurlencode($userId) . '/media'
+            );
         }
 
-        $code = (int) wp_remote_retrieve_response_code($response);
-        $body = json_decode((string) wp_remote_retrieve_body($response), true);
-        if ($code < 200 || $code >= 300 || ! is_array($body) || ! isset($body['data']) || ! is_array($body['data'])) {
+        $body = null;
+        foreach ($endpoints as $endpoint) {
+            $response = wp_remote_get($endpoint, [
+                'timeout' => 15,
+                'headers' => ['Accept' => 'application/json'],
+            ]);
+
+            if (is_wp_error($response)) {
+                continue;
+            }
+
+            $code = (int) wp_remote_retrieve_response_code($response);
+            $decoded = json_decode((string) wp_remote_retrieve_body($response), true);
+            if ($code >= 200 && $code < 300 && is_array($decoded) && isset($decoded['data']) && is_array($decoded['data'])) {
+                $body = $decoded;
+                break;
+            }
+        }
+
+        $ttl = max(60, (int) get_option('ff_addons_cache_ttl', 300));
+
+        if ($body === null) {
+            // Brief negative cache so a bad token does not hammer the API every page view.
+            if (! $bypassCache) {
+                set_transient($cacheKey, ['items' => []], min(120, $ttl));
+            }
+
             return [];
         }
 
@@ -903,13 +876,7 @@ class FF_Addons_Plugin
             if (! is_array($row)) {
                 continue;
             }
-            $type = strtoupper((string) ($row['media_type'] ?? ''));
-            $image = '';
-            if ($type === 'VIDEO' || $type === 'REELS') {
-                $image = (string) ($row['thumbnail_url'] ?? $row['media_url'] ?? '');
-            } else {
-                $image = (string) ($row['media_url'] ?? $row['thumbnail_url'] ?? '');
-            }
+            $image = $this->instagram_media_image_url($row);
             if ($image === '') {
                 continue;
             }
@@ -923,10 +890,44 @@ class FF_Addons_Plugin
             }
         }
 
-        $ttl = (int) get_option('ff_addons_cache_ttl', 300);
-        set_transient($cacheKey, $items, max(60, $ttl));
+        if (! $bypassCache) {
+            set_transient($cacheKey, ['items' => $items], $ttl);
+        }
 
         return $items;
+    }
+
+    /**
+     * Pick a displayable image URL from an Instagram media node.
+     *
+     * @param  array<string, mixed>  $row
+     */
+    private function instagram_media_image_url(array $row): string
+    {
+        $type = strtoupper((string) ($row['media_type'] ?? ''));
+        if ($type === 'VIDEO' || $type === 'REELS') {
+            $image = (string) ($row['thumbnail_url'] ?? $row['media_url'] ?? '');
+        } else {
+            // IMAGE + CAROUSEL_ALBUM (cover) usually expose media_url.
+            $image = (string) ($row['media_url'] ?? $row['thumbnail_url'] ?? '');
+        }
+
+        return $image !== '' && filter_var($image, FILTER_VALIDATE_URL) ? $image : '';
+    }
+
+    /**
+     * Delete cached Instagram media payloads (e.g. after token changes).
+     */
+    public function clear_instagram_media_cache(): void
+    {
+        global $wpdb;
+        // Transients are stored as options with _transient_ / _transient_timeout_ prefixes.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+        $wpdb->query(
+            "DELETE FROM {$wpdb->options}
+             WHERE option_name LIKE '_transient_ff_addons_ig_media_%'
+                OR option_name LIKE '_transient_timeout_ff_addons_ig_media_%'"
+        );
     }
 
     /**
