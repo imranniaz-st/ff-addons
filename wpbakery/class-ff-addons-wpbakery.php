@@ -30,7 +30,10 @@ class FF_Addons_WPBakery
         vc_map([
             'name' => __('FF Menu', 'ff-addons'),
             'base' => 'ff_addons_menu',
-            'category' => __('FF Addons', 'ff-addons'),
+            'category' => [
+                __('FF Addons', 'ff-addons'),
+                __('FF Addons · Menu', 'ff-addons'),
+            ],
             'icon' => 'icon-wpb-woocommerce',
             'description' => __('Facefood product grid — pick any menu category.', 'ff-addons'),
             'params' => [
@@ -76,7 +79,10 @@ class FF_Addons_WPBakery
         vc_map([
             'name' => __('FF Categories', 'ff-addons'),
             'base' => 'ff_addons_categories',
-            'category' => __('FF Addons', 'ff-addons'),
+            'category' => [
+                __('FF Addons', 'ff-addons'),
+                __('FF Addons · Menu', 'ff-addons'),
+            ],
             'icon' => 'icon-wpb-application-icon-large',
             'description' => __('All Facefood categories (Shawarma, Burgers, …).', 'ff-addons'),
             'params' => [
@@ -132,7 +138,10 @@ class FF_Addons_WPBakery
         vc_map([
             'name' => __('FF Deals', 'ff-addons'),
             'base' => 'ff_addons_deals',
-            'category' => __('FF Addons', 'ff-addons'),
+            'category' => [
+                __('FF Addons', 'ff-addons'),
+                __('FF Addons · Offers', 'ff-addons'),
+            ],
             'icon' => 'icon-wpb-woocommerce',
             'description' => __('Facefood deals grid from the Laravel API.', 'ff-addons'),
             'params' => [
@@ -159,7 +168,10 @@ class FF_Addons_WPBakery
         vc_map([
             'name' => __('FF CTA', 'ff-addons'),
             'base' => 'ff_addons_cta',
-            'category' => __('FF Addons', 'ff-addons'),
+            'category' => [
+                __('FF Addons', 'ff-addons'),
+                __('FF Addons · General', 'ff-addons'),
+            ],
             'icon' => 'icon-wpb-ui-button',
             'description' => __('Facefood call-to-action banner.', 'ff-addons'),
             'params' => [

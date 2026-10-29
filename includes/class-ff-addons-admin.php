@@ -95,11 +95,11 @@ class FF_Addons_Admin
 
             <h2><?php echo esc_html__('Elementor widgets', 'ff-addons'); ?></h2>
             <ul>
-                <li><strong>FF Categories</strong> — <?php echo esc_html__('all menu categories (Shawarma, Burgers, …)', 'ff-addons'); ?></li>
-                <li><strong>FF Menu</strong> — <?php echo esc_html__('products with category dropdown', 'ff-addons'); ?></li>
-                <li><strong>FF Deals</strong> / <strong>FF CTA</strong></li>
+                <li><strong><?php echo esc_html__('FF Addons · General', 'ff-addons'); ?></strong> — FF CTA</li>
+                <li><strong><?php echo esc_html__('FF Addons · Menu', 'ff-addons'); ?></strong> — FF Categories, FF Menu</li>
+                <li><strong><?php echo esc_html__('FF Addons · Offers', 'ff-addons'); ?></strong> — FF Deals</li>
             </ul>
-            <p><?php echo esc_html__('In Elementor: search “FF” in the widget panel, or open category “FF Addons”. Style tab controls colors, typography, and spacing.', 'ff-addons'); ?></p>
+            <p><?php echo esc_html__('In Elementor: search “FF”, or open FF Addons / General / Menu / Offers. Widgets also appear under Elementor General. Style tab controls colors, typography, and spacing.', 'ff-addons'); ?></p>
 
             <p>
                 <a href="<?php echo esc_url(FF_ADDONS_URL . 'docs/API.md'); ?>" target="_blank" rel="noopener noreferrer">

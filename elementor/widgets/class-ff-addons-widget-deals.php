@@ -23,7 +23,12 @@ class FF_Addons_Widget_Deals extends FF_Addons_Widget_Base
 
     public function get_keywords(): array
     {
-        return ['facefood', 'deals', 'offers'];
+        return ['facefood', 'deals', 'offers', 'ff addons'];
+    }
+
+    protected function ff_addon_categories(): array
+    {
+        return ['ff-addons-offers', 'ff-addons-general'];
     }
 
     protected function register_controls(): void

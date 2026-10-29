@@ -23,7 +23,12 @@ class FF_Addons_Widget_Menu extends FF_Addons_Widget_Base
 
     public function get_keywords(): array
     {
-        return ['facefood', 'menu', 'products', 'food', 'category'];
+        return ['facefood', 'menu', 'products', 'food', 'category', 'ff addons'];
+    }
+
+    protected function ff_addon_categories(): array
+    {
+        return ['ff-addons-menu', 'ff-addons-general'];
     }
 
     protected function register_controls(): void

@@ -23,7 +23,12 @@ class FF_Addons_Widget_Cta extends FF_Addons_Widget_Base
 
     public function get_keywords(): array
     {
-        return ['facefood', 'cta', 'order'];
+        return ['facefood', 'cta', 'order', 'ff addons', 'general'];
+    }
+
+    protected function ff_addon_categories(): array
+    {
+        return ['ff-addons-general'];
     }
 
     protected function register_controls(): void

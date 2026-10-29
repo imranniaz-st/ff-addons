@@ -22,7 +22,14 @@ This plugin is a **separate** project from:
 
 ## Elementor (easy edit)
 
-Panel category **FF Addons**:
+Panel categories:
+
+| Panel group | Widgets |
+|-------------|---------|
+| **FF Addons** | All widgets |
+| **FF Addons · General** | FF CTA (+ also under Elementor **General**) |
+| **FF Addons · Menu** | FF Categories, FF Menu |
+| **FF Addons · Offers** | FF Deals |
 
 | Widget | Notes |
 |--------|--------|

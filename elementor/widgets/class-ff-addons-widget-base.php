@@ -6,9 +6,27 @@ if (! defined('ABSPATH')) {
 
 abstract class FF_Addons_Widget_Base extends \Elementor\Widget_Base
 {
+    /**
+     * Always under FF Addons + Elementor General; subclasses add Menu / Offers / General.
+     *
+     * @return list<string>
+     */
     public function get_categories(): array
     {
-        return ['ff-addons'];
+        return array_values(array_unique(array_merge(
+            ['ff-addons', 'general'],
+            $this->ff_addon_categories()
+        )));
+    }
+
+    /**
+     * Extra FF Addons panel groups for this widget.
+     *
+     * @return list<string>
+     */
+    protected function ff_addon_categories(): array
+    {
+        return ['ff-addons-general'];
     }
 
     public function get_style_depends(): array

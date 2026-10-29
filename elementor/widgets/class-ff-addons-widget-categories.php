@@ -23,7 +23,12 @@ class FF_Addons_Widget_Categories extends FF_Addons_Widget_Base
 
     public function get_keywords(): array
     {
-        return ['facefood', 'category', 'categories', 'menu', 'shawarma', 'burgers'];
+        return ['facefood', 'category', 'categories', 'menu', 'shawarma', 'burgers', 'ff addons'];
+    }
+
+    protected function ff_addon_categories(): array
+    {
+        return ['ff-addons-menu', 'ff-addons-general'];
     }
 
     protected function register_controls(): void

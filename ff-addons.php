@@ -3,7 +3,7 @@
  * Plugin Name: FF Addons
  * Plugin URI: https://facefood.cafe
  * Description: Facefood add-ons for Elementor and WPBakery — menu, deals, and CTA blocks powered by the Facefood Laravel API.
- * Version: 1.1.0
+ * Version: 1.1.1
  * Author: Facefood
  * Author URI: https://facefood.cafe
  * Text Domain: ff-addons
@@ -16,7 +16,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('FF_ADDONS_VERSION', '1.1.0');
+define('FF_ADDONS_VERSION', '1.1.1');
 define('FF_ADDONS_FILE', __FILE__);
 define('FF_ADDONS_DIR', plugin_dir_path(__FILE__));
 define('FF_ADDONS_URL', plugin_dir_url(__FILE__));

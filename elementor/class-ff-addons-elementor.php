@@ -18,10 +18,29 @@ class FF_Addons_Elementor
 
     public function register_category($elements_manager): void
     {
-        $elements_manager->add_category('ff-addons', [
-            'title' => __('FF Addons', 'ff-addons'),
-            'icon' => 'eicon-food-menu',
-        ]);
+        // Panel groups so widgets are easy to find while editing.
+        $categories = [
+            'ff-addons' => [
+                'title' => __('FF Addons', 'ff-addons'),
+                'icon' => 'eicon-apps',
+            ],
+            'ff-addons-general' => [
+                'title' => __('FF Addons · General', 'ff-addons'),
+                'icon' => 'eicon-tools',
+            ],
+            'ff-addons-menu' => [
+                'title' => __('FF Addons · Menu', 'ff-addons'),
+                'icon' => 'eicon-food-menu',
+            ],
+            'ff-addons-offers' => [
+                'title' => __('FF Addons · Offers', 'ff-addons'),
+                'icon' => 'eicon-price-table',
+            ],
+        ];
+
+        foreach ($categories as $slug => $config) {
+            $elements_manager->add_category($slug, $config);
+        }
     }
 
     public function register_widgets($widgets_manager): void
